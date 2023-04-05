@@ -1,0 +1,24 @@
+{
+  "name": "mapdb",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Simple Map Objects memory database",
+  "main": "mapdb.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/seyanim/mapdb.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/seyanim/mapdb/issues"
+  },
+  "homepage": "https://gitlab.com/seyanim/mapdb#readme",
+  "devDependencies": {
+    "eslint-plugin-prettier": "^4.2.1",
+    "prettier": "2.8.7"
+  }
+}
