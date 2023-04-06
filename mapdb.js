@@ -23,55 +23,71 @@ class Table {
   data = new Map();
   unique = new Map();
   constructor(mdb, tablename, options) {
-    this.mdb = mdb
+    this.mdb = mdb;
     this.name = tablename;
     if (options?.id) {
       this.id = options?.id;
     }
     //CREATE UNIQUE MAPS
-    for(const uniqueField of options?.unique ?? [] ){
-      this.unique.set(uniqueField,new Map())
+    for (const uniqueField of options?.unique ?? []) {
+      this.unique.set(uniqueField, new Map());
     }
     //CREATE ONE-MANY RELATION
-    for(const hasOneField of options?.hasOne ?? [] ){
-      this.mdb.createTable(`${hasOneField.table}-${this.name}`)
+    for (const hasOneField of options?.hasOne ?? []) {
+      this.mdb.createTable(`${hasOneField.table}-${this.name}`);
     }
   }
   describe() {
     return { id: this.id, name: this.name, unique: [...this.unique.keys()] };
   }
-  insert(record) {
-    if (typeof record != 'object') {
+  insert(data) {
+    if (typeof data != 'object') {
       throw new error('Wrong data type');
     }
 
     //CHECK ID EXIST IN OBJECTS
-    if (this.id == 'id' && !record[this.id]) {
-      record[this.id] = randomHexString();
+    if (this.id == 'id' && !data[this.id]) {
+      data[this.id] = randomHexString();
     }
-    if (this.id != 'id' && !record[this.id]) {
+    if (this.id != 'id' && !data[this.id]) {
       throw new Error(`Missing ${this.id} field`);
     }
     //CHECK IF RECORD ALREADY EXISTS
-    if (this.data.has(record[this.id])) {
+    if (this.data.has(data[this.id])) {
       throw new Error(`Record ${this.id} already exists`);
     }
     //CHECK UNIQUE
-    for( const [key,val] of this.unique ){
-      if( val.has( record[key] ) ){
-        throw new Error(`Record '${key}' duplicated. ${key}:${record[key]}`);
+    for (const [key, val] of this.unique) {
+      if (val.has(data[key])) {
+        throw new Error(`Record '${key}' duplicated. ${key}:${data[key]}`);
       }
     }
     //STORE RECORD
-    this.data.set(record[this.id], record);
+    this.data.set(data[this.id], data);
     //UPDATE UNIQUES
-    for( const [key,val] of this.unique ){
-      val.set( record[key] )
+    for (const [key, val] of this.unique) {
+      val.set(data[key]);
     }
     //TODO fill oneMany relationship
+    record = new Record(this, data);
     return record;
   }
-  
+}
+
+class Record {
+  table;
+  data;
+  constructor(table, data) {
+    this.table = table;
+    this.data = data;
+    return new Proxy(this, {
+      set: (object, key, value, proxy) => {
+        object[key] = value;
+        console.log('PROXY SET');
+        return true;
+      },
+    });
+  }
 }
 
 function randomHexString(size = 40) {
