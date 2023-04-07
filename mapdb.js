@@ -1,8 +1,9 @@
 import Crypto from "crypto";
 
 export default class {
-  tables = new Map();
-  constructor() {}
+  constructor() {
+    this.tables = new Map();
+  }
   describe() {
     return { tables: [...this.tables.keys()] };
   }
@@ -11,27 +12,26 @@ export default class {
     if (this.tables.has(tablename)) {
       throw new Error(`Table ${tablename} already exists`);
     }
+
     const newtable = new Table(this, tablename, options);
     this.tables.set(tablename, newtable);
     return newtable;
   }
 }
 class Table {
-  mdb;
-  name;
-  options;
-  id = "id";
-
   uniques = new Map();
   constructor(mdb, tablename, options) {
     this.mdb = mdb;
     this.name = tablename;
     this.options = options;
     this.data = new Map();
+    this.id = "id";
     //CHECK IDS
     if (options?.fields) {
       let testMultipleIds;
       for (const [field, properties] of Object.entries(options.fields)) {
+        //VALIDATE OPTIONS
+        //MULTIPLE IDS
         if (properties?.id) {
           if (testMultipleIds) {
             throw new Error("Multiple Ids configured");
@@ -44,7 +44,8 @@ class Table {
           this.uniques.set(field, new Map());
         }
         if (properties?.hasOne) {
-          this.mdb.createTable(`${properties.hasOne}-${this.name}`);
+          properties.pivotTable = `${properties.hasOne}-${this.name}-${field}`;
+          this.mdb.createTable(properties.pivotTable);
         }
       }
     }
@@ -81,6 +82,7 @@ class Table {
     //CREATE RECORD AN POPULATE
     const recordHandler = new RecordHandler(this);
     const record = new Proxy({}, recordHandler);
+    record[this.id] = data[this.id];
     for (const [key, val] of Object.entries(data)) {
       record[key] = val;
     }
@@ -100,15 +102,30 @@ class RecordHandler {
       //get: (target, prop, receiver) => {},
       set: function (target, key, value, proxy) {
         const old_value = target[key];
+        const fieldOptions = this.options?.fields?.[key];
+
+        //CHECK REQUIRED
+        if (fieldOptions?.required && !value) {
+          throw new Error(`Field (${key}) required`);
+        }
+        //CHECK FOREINGREQUIRED
+        if (
+          fieldOptions?.hasOne &&
+          fieldOptions?.notForeignRequired !== true &&
+          value &&
+          !this.mdb.tables.get(this.options.fields[key].hasOne)?.data.get(value)
+        ) {
+          throw new Error(
+            `Not valid parent for field ${key}:${value} required`
+          );
+        }
         //IGNORE ON SAME
         if (target[key] === value) {
           return true;
         }
         //CHECK IF RECORD ALREADY EXISTS
-        if (key == this.id) {
-          if (this.data.has(value)) {
-            throw new Error(`Id record ${key}:${value} already exists`);
-          }
+        if (key == this.id && this.data.has(value)) {
+          throw new Error(`Id record ${key}:${value} already exists`);
         }
         //CHECK UNIQUE
         if (this.uniques.has(key)) {
@@ -126,6 +143,29 @@ class RecordHandler {
           this.uniques.get(key).delete(old_value);
           this.uniques.get(key).set(value);
         }
+        //forheign data
+
+        if (fieldOptions?.hasOne) {
+          const pivotTableName = this.options.fields[key].pivotTable;
+          const pivotTable = this.mdb.tables.get(pivotTableName);
+          const forheignTable = this.mdb.tables.get(fieldOptions.hasOne);
+          if (forheignTable.data.has(value)) {
+            //CREATE SET IF NOT EXISTS ON PIVOT
+            if (!pivotTable.data.has(value)) {
+              pivotTable.data.set(value, new Set());
+            }
+            if (pivotTable.data.has(old_value)) {
+              pivotTable.data.get(old_value).delete(target[this.id]);
+              //DELETE SET IF ITS NULL
+              if (pivotTable.data.get(old_value).size <= 0) {
+                pivotTable.data.delete(old_value);
+              }
+            }
+
+            pivotTable.data.get(value).add(target[this.id]);
+          }
+        }
+
         target[key] = value;
         return true;
       }.bind(table),

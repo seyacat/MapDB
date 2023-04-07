@@ -8,7 +8,7 @@ const games = mdb.createTable("games", { fields: { name: { unique: true } } });
 const rooms = mdb.createTable("rooms", {
   fields: {
     name: { unique: true },
-    game: { hasOne: "games", required: true },
+    game: { hasOne: "games", required: true, notForeignRequired: true },
     players: { hasMany: true },
   },
 });
@@ -25,7 +25,7 @@ it("Unique field duplication", function () {
 
 const game2 = games.insert({ name: "juego2", desc: "j1" });
 
-const room1 = rooms.insert({});
+const room1 = rooms.insert({ game: "game1" });
 
 it("Empty unique field duplication", function () {
   chai
@@ -35,7 +35,7 @@ it("Empty unique field duplication", function () {
     .to.throw("Record duplicated. name:null");
 });
 
-const room2 = rooms.insert({ name: "room2" });
+const room2 = rooms.insert({ name: "room2", game: "game1" });
 room2.test = "hola";
 
 it("Unique field duplication on insert", function () {
