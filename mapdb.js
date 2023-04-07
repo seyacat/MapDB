@@ -41,7 +41,6 @@ class Table {
         }
         //CREATE UNIQUES MAP
         if (properties?.unique) {
-          console.log(field, properties);
           this.uniques.set(field, new Map());
         }
         if (properties?.hasOne) {
@@ -66,6 +65,14 @@ class Table {
     //CHECK ID EXIST IN OBJECTS
     if (this.id == "id" && !data[this.id]) {
       data[this.id] = randomHexString();
+    }
+    //POPULATED DECLARED FIELD ON NULL
+    if (this.options?.fields) {
+      for (const field of Object.keys(this.options.fields)) {
+        if (!data[field]) {
+          data[field] = null;
+        }
+      }
     }
     if (this.id != "id" && !data[this.id]) {
       throw new Error(`Missing ${this.id} field`);
