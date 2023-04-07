@@ -21,25 +21,28 @@ class Table {
   name;
   options;
   id = "id";
-  data = new Map();
-  unique = new Map();
+
+  uniques = new Map();
   constructor(mdb, tablename, options) {
     this.mdb = mdb;
     this.name = tablename;
     this.options = options;
+    this.data = new Map();
     //CHECK IDS
     if (options?.fields) {
       let testMultipleIds;
       for (const [field, properties] of Object.entries(options.fields)) {
         if (properties?.id) {
           if (testMultipleIds) {
-            throw new Error("Multiple Ids Configured");
+            throw new Error("Multiple Ids configured");
           }
           testMultipleIds = true;
           this.id = field;
         }
+        //CREATE UNIQUES MAP
         if (properties?.unique) {
-          this.unique.set(field, new Map());
+          console.log(field, properties);
+          this.uniques.set(field, new Map());
         }
         if (properties?.hasOne) {
           this.mdb.createTable(`${properties.hasOne}-${this.name}`);
@@ -58,6 +61,7 @@ class Table {
     if (typeof data != "object") {
       throw new error("Wrong data type");
     }
+
     //TODO MOVE CHECKS TO PROXY
     //CHECK ID EXIST IN OBJECTS
     if (this.id == "id" && !data[this.id]) {
@@ -66,25 +70,19 @@ class Table {
     if (this.id != "id" && !data[this.id]) {
       throw new Error(`Missing ${this.id} field`);
     }
-    //CHECK IF RECORD ALREADY EXISTS
-    if (this.data.has(data[this.id])) {
-      throw new Error(`Record ${this.id} already exists`);
-    }
-    //CHECK UNIQUE
-    for (const [key, val] of this.unique) {
-      if (val.has(data[key])) {
-        throw new Error(`Record '${key}' duplicated. ${key}:${data[key]}`);
-      }
+
+    //CREATE RECORD AN POPULATE
+    const recordHandler = new RecordHandler(this);
+    const record = new Proxy({}, recordHandler);
+    for (const [key, val] of Object.entries(data)) {
+      record[key] = val;
     }
     //STORE RECORD
-    this.data.set(data[this.id], data);
-    //UPDATE UNIQUES
-    for (const [key, val] of this.unique) {
-      val.set(data[key]);
-    }
+
+    this.data.set(data[this.id], record);
+
     //TODO fill oneMany relationship
-    const recordHandler = new RecordHandler(this);
-    const record = new Proxy(data, recordHandler);
+
     return record;
   }
 }
@@ -94,8 +92,34 @@ class RecordHandler {
     return {
       //get: (target, prop, receiver) => {},
       set: function (target, key, value, proxy) {
+        const old_value = target[key];
+        //IGNORE ON SAME
+        if (target[key] === value) {
+          return true;
+        }
+        //CHECK IF RECORD ALREADY EXISTS
+        if (key == this.id) {
+          if (this.data.has(value)) {
+            throw new Error(`Id record ${key}:${value} already exists`);
+          }
+        }
+        //CHECK UNIQUE
+        if (this.uniques.has(key)) {
+          if (this.uniques.get(key).has(value)) {
+            throw new Error(`Record duplicated. ${key}:${value}`);
+          }
+        }
+
+        //UPDATE CONSTRAINTS
+        if (key == this.id && old_value) {
+          this.data.set(value, this.data.get(old_value));
+          this.data.delete(old_value);
+        }
+        if (this.uniques.has(key)) {
+          this.uniques.get(key).delete(old_value);
+          this.uniques.get(key).set(value);
+        }
         target[key] = value;
-        console.log(`PROXY SET ${key} = ${value} `);
         return true;
       }.bind(table),
     };
