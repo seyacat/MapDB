@@ -1,4 +1,4 @@
-import Crypto from 'crypto';
+import Crypto from "crypto";
 
 export default class {
   tables = new Map();
@@ -19,37 +19,51 @@ export default class {
 class Table {
   mdb;
   name;
-  id = 'id';
+  options;
+  id = "id";
   data = new Map();
   unique = new Map();
   constructor(mdb, tablename, options) {
     this.mdb = mdb;
     this.name = tablename;
-    if (options?.id) {
-      this.id = options?.id;
+    this.options = options;
+    //CHECK IDS
+    if (options?.fields) {
+      let testMultipleIds;
+      for (const [field, properties] of Object.entries(options.fields)) {
+        if (properties?.id) {
+          if (testMultipleIds) {
+            throw new Error("Multiple Ids Configured");
+          }
+          testMultipleIds = true;
+          this.id = field;
+        }
+        if (properties?.unique) {
+          this.unique.set(field, new Map());
+        }
+        if (properties?.hasOne) {
+          this.mdb.createTable(`${properties.hasOne}-${this.name}`);
+        }
+      }
     }
-    //CREATE UNIQUE MAPS
-    for (const uniqueField of options?.unique ?? []) {
-      this.unique.set(uniqueField, new Map());
-    }
+
     //CREATE ONE-MANY RELATION
     for (const hasOneField of options?.hasOne ?? []) {
-      this.mdb.createTable(`${hasOneField.table}-${this.name}`);
     }
   }
   describe() {
-    return { id: this.id, name: this.name, unique: [...this.unique.keys()] };
+    return { id: this.id, name: this.name, options: this.options };
   }
   insert(data) {
-    if (typeof data != 'object') {
-      throw new error('Wrong data type');
+    if (typeof data != "object") {
+      throw new error("Wrong data type");
     }
-
+    //TODO MOVE CHECKS TO PROXY
     //CHECK ID EXIST IN OBJECTS
-    if (this.id == 'id' && !data[this.id]) {
+    if (this.id == "id" && !data[this.id]) {
       data[this.id] = randomHexString();
     }
-    if (this.id != 'id' && !data[this.id]) {
+    if (this.id != "id" && !data[this.id]) {
       throw new Error(`Missing ${this.id} field`);
     }
     //CHECK IF RECORD ALREADY EXISTS
@@ -69,27 +83,25 @@ class Table {
       val.set(data[key]);
     }
     //TODO fill oneMany relationship
-    record = new Record(this, data);
+    const recordHandler = new RecordHandler(this);
+    const record = new Proxy(data, recordHandler);
     return record;
   }
 }
 
-class Record {
-  table;
-  data;
-  constructor(table, data) {
-    this.table = table;
-    this.data = data;
-    return new Proxy(this, {
-      set: (object, key, value, proxy) => {
-        object[key] = value;
-        console.log('PROXY SET');
+class RecordHandler {
+  constructor(table) {
+    return {
+      //get: (target, prop, receiver) => {},
+      set: function (target, key, value, proxy) {
+        target[key] = value;
+        console.log(`PROXY SET ${key} = ${value} `);
         return true;
-      },
-    });
+      }.bind(table),
+    };
   }
 }
 
 function randomHexString(size = 40) {
-  return Crypto.randomBytes(size).toString('hex').slice(0, size);
+  return Crypto.randomBytes(size).toString("hex").slice(0, size);
 }
