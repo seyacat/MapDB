@@ -11,10 +11,9 @@ const rooms = mdb.createTable("rooms", {
   fields: {
     name: { unique: true },
     game: { hasOne: "games", required: true },
-    players: { hasMany: true },
+    players: { hasMany: "players" },
   },
 });
-const players = mdb.createTable("players");
 
 const game1 = games.insert({});
 const game2 = games.insert({ name: "game2" });
@@ -38,6 +37,11 @@ it("Invalid Parent", function () {
 const room2 = rooms.insert({ name: "room2", game: game1.id });
 const room3 = rooms.insert({ name: "room3", game: game1.id });
 const room4 = rooms.insert({ name: "room4", game: game1.id });
+
+const players = mdb.createTable("players", {
+  fields: { room: { hasOne: "rooms" } },
+});
+const player1 = players.insert({ name: "player1" });
 
 const pivotTable = mdb.tables.get(
   mdb.tables.get("rooms").options.fields.game.pivotTable
