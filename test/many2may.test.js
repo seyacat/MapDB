@@ -33,12 +33,20 @@ const estudiante1 = estudiantes.insert({ name: "juan" });
 const estudiante2 = estudiantes.insert({ name: "pedro" });
 const estudiante3 = estudiantes.insert({ name: "maria" });
 
-curso1.attach("estudiantes", curso1.id);
+curso1.attach("estudiantes", estudiante1.id);
 
 it("Wrong configuration hasMany", function () {
   chai
     .expect(() => {
-      console.log(curso1.attach("wrongfield", curso1.id));
+      curso1.attach("estudiantes", "badid");
+    })
+    .to.throw("Not valid forheign Id (badid)");
+});
+
+it("Wrong configuration hasMany", function () {
+  chai
+    .expect(() => {
+      curso1.attach("wrongfield", curso1.id);
     })
     .to.throw("Not valid hasMany field (wrongfield)");
 });

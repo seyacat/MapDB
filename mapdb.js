@@ -109,6 +109,7 @@ class Table {
 
     return record;
   }
+  //TODO HANDLE DELETES
 }
 
 class RecordHandler {
@@ -131,7 +132,7 @@ class RecordHandler {
 
         if (prop === "attach") {
           //MANY TO MANY ATTACH
-          return function (field, id) {
+          return function (field, forheignId) {
             if (
               !this.options?.fields?.[field]?.pivotTable ||
               !this.options?.fields?.[field]?.hasMany
@@ -142,6 +143,17 @@ class RecordHandler {
             const pivotTableName = this.options.fields[field].pivotTable;
             const pivotTable = this.mdb.tables.get(pivotTableName);
             const forheignTable = this.mdb.tables.get(fieldOptions.hasMany);
+            //VALIDATE REMOTE ID
+            if (!forheignTable.data.get(forheignId)) {
+              throw new Error(`Not valid forheign Id (${forheignId})`);
+            }
+
+            //CREATE SET IF NOT EXISTS
+            if (!pivotTable.data.has(target[this.id])) {
+              pivotTable.data.set(target[this.id], new Set());
+            }
+            pivotTable.data.get(target[this.id]).add(forheignId);
+
             return;
           }.bind(this);
         } else {
