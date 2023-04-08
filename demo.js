@@ -1,4 +1,4 @@
-import MapDb from "../mapdb.js";
+import MapDb from "./mapdb.js";
 
 const mdb = new MapDb();
 
@@ -20,5 +20,5 @@ const juan = usuarios.insert({ nombre: "Juan", email: "juan@juan.com" });
 const auto1 = automoviles.insert({ marca: "fiat", usuario: juan.id });
 
 console.log({ pablo, juan });
-console.log({ auto1 });
+console.log(auto1);
 console.log(mdb.describe());

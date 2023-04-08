@@ -5,6 +5,7 @@
   "description": "Simple Map Objects memory database",
   "main": "mapdb.js",
   "scripts": {
+    "demo": "node ./demo.js",
     "test": "nyc mocha --reporter min",
     "test:watch": "mocha --watch --parallel --reporter min"
   },

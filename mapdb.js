@@ -130,6 +130,13 @@ class RecordHandler {
           return childs;
         }
 
+        if (this.options?.fields?.[prop]?.hasOne) {
+          const fieldOptions = this.options?.fields?.[prop];
+          const forheignTable = this.mdb.tables.get(fieldOptions.hasOne);
+          const parent = forheignTable.data.get(target[prop]);
+          return parent;
+        }
+
         if (prop === "attach") {
           //MANY TO MANY ATTACH
           return function (field, forheignId) {
