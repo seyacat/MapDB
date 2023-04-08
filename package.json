@@ -5,9 +5,9 @@
   "description": "Simple Map Objects memory database",
   "main": "mapdb.js",
   "scripts": {
-    "demo": "node ./demo.js",
-    "test": "nyc mocha --reporter min",
-    "test:watch": "mocha --watch --parallel --reporter min"
+    "demo": "node ./test/demo.js",
+    "test": "mocha --reporter list",
+    "test:watch": "mocha --watch --parallel --reporter list"
   },
   "repository": {
     "type": "git",
@@ -23,7 +23,6 @@
     "chai": "^4.3.7",
     "eslint-plugin-prettier": "^4.2.1",
     "mocha": "^10.2.0",
-    "nyc": "^15.1.0",
     "prettier": "2.8.7"
   }
 }

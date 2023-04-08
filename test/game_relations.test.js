@@ -5,12 +5,15 @@ import chai from "chai";
 const mdb = new MapDb();
 
 const games = mdb.createTable("games", {
-  fields: { name: { unique: true }, rooms: { hasMany: "rooms" } },
+  fields: {
+    name: { unique: true },
+    rooms: { hasMany: "rooms", fhField: "game" },
+  },
 });
 const rooms = mdb.createTable("rooms", {
   fields: {
     name: { unique: true },
-    game: { hasOne: "games", required: true },
+    game: { hasOne: "games", required: true, fhField: "rooms" },
     players: { hasMany: "players" },
   },
 });
@@ -48,13 +51,13 @@ const pivotTable = mdb.tables.get(
 );
 
 it("Test pivot sizes1", function () {
-  assert.equal(game1.rooms.length, 3);
-  assert.equal(game2.rooms.length, 1);
+  assert.equal(game1.rooms_data?.length, 3);
+  assert.equal(game2.rooms_data?.length, 1);
   room4.game = game2.id;
-  assert.equal(game1.rooms.length, 2);
-  assert.equal(game2.rooms.length, 2);
+  assert.equal(game1.rooms_data?.length, 2);
+  assert.equal(game2.rooms_data?.length, 2);
   room1.game = game1.id;
   room4.game = game1.id;
-  assert.equal(game1.rooms.length, 4);
+  assert.equal(game1.rooms_data?.length, 4);
   assert.equal(game2.rooms, null);
 });

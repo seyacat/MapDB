@@ -8,7 +8,7 @@ const games = mdb.createTable("games", { fields: { name: { unique: true } } });
 const rooms = mdb.createTable("rooms", {
   fields: {
     name: { unique: true },
-    game: { hasOne: "games", required: true, notForeignRequired: true },
+    game: { hasOne: "games", required: true },
     players: { hasMany: true },
   },
 });

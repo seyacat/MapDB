@@ -1,4 +1,4 @@
-import MapDb from "./mapdb.js";
+import MapDb from "../mapdb.js";
 
 const mdb = new MapDb();
 

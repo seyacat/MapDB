@@ -9,7 +9,7 @@ TODO
 ## Integrate with your tools
 TODO
 
-## Test y Deploy
+## Test
 
 Test integrado con Mocha
 ```

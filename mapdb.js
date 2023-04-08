@@ -19,6 +19,8 @@ export default class {
   }
 }
 class Table {
+  //TODO FIX UNIQUES BUG
+  //uniques: Map { name: ❗Cannot read properties of null (reading 'toString') },
   uniques = new Map();
   constructor(mdb, tablename, options) {
     this.mdb = mdb;
@@ -116,9 +118,25 @@ class RecordHandler {
   constructor(table) {
     return {
       get: function (target, prop, receiver) {
+        let field;
+        if (typeof prop === "string" && prop.includes("_data")) {
+          field = prop.replace("_data", "");
+        }
+
         if (this.options?.fields?.[prop]?.hasMany) {
           const fieldOptions = this.options?.fields?.[prop];
           const pivotTableName = this.options.fields[prop].pivotTable;
+          const pivotTable = this.mdb.tables.get(pivotTableName);
+          const childIds = pivotTable.data.get(target[this.id]);
+          if (childIds?.length) {
+            return "[...]";
+          } else {
+            return null;
+          }
+        }
+        if (this.options?.fields?.[field]?.hasMany) {
+          const fieldOptions = this.options?.fields?.[field];
+          const pivotTableName = this.options.fields[field].pivotTable;
           const pivotTable = this.mdb.tables.get(pivotTableName);
           const forheignTable = this.mdb.tables.get(fieldOptions.hasMany);
           const childIds = pivotTable.data.get(target[this.id]);
@@ -134,6 +152,16 @@ class RecordHandler {
           const fieldOptions = this.options?.fields?.[prop];
           const forheignTable = this.mdb.tables.get(fieldOptions.hasOne);
           const parent = forheignTable.data.get(target[prop]);
+          if (parent) {
+            return "[...]";
+          } else {
+            return null;
+          }
+        }
+        if (this.options?.fields?.[field]?.hasOne) {
+          const fieldOptions = this.options?.fields?.[field];
+          const forheignTable = this.mdb.tables.get(fieldOptions.hasOne);
+          const parent = forheignTable.data.get(target[field]);
           return parent;
         }
 
@@ -170,22 +198,46 @@ class RecordHandler {
       set: function (target, key, value, proxy) {
         const old_value = target[key];
         const fieldOptions = this.options?.fields?.[key];
+        let forheignTable;
+
+        if (fieldOptions?.hasOne) {
+          forheignTable = fieldOptions?.hasOne
+            ? this.mdb.tables.get(fieldOptions.hasOne)
+            : null;
+        }
+        if (fieldOptions?.hasMany) {
+          forheignTable = fieldOptions?.hasMany
+            ? this.mdb.tables.get(fieldOptions.hasMany)
+            : null;
+        }
 
         //CHECK REQUIRED
         if (fieldOptions?.required && !value) {
           throw new Error(`Field (${key}) required`);
         }
-        //CHECK FOREINGREQUIRED
+        //CHECK FOREING
+        if (
+          (fieldOptions?.hasOne || fieldOptions?.hasMany) &&
+          fieldOptions?.fhField &&
+          !forheignTable?.options?.fields?.[fieldOptions?.fhField]
+        ) {
+          throw new Error(
+            `Configuration required on forheigh table ${
+              fieldOptions?.hasOne ?? fieldOptions?.hasMany
+            }`
+          );
+        }
         if (
           fieldOptions?.hasOne &&
-          fieldOptions?.notForeignRequired !== true &&
-          value &&
-          !this.mdb.tables.get(this.options.fields[key].hasOne)?.data.get(value)
+          fieldOptions?.fhField &&
+          forheignTable?.options?.fields?.[fieldOptions?.fhField] &&
+          !forheignTable?.data.get(value)
         ) {
           throw new Error(
             `Not valid parent for field ${key}:${value} required`
           );
         }
+
         //IGNORE ON SAME
         if (target[key] === value) {
           return true;
@@ -215,8 +267,12 @@ class RecordHandler {
         if (fieldOptions?.hasOne) {
           const pivotTableName = this.options.fields[key].pivotTable;
           const pivotTable = this.mdb.tables.get(pivotTableName);
-          const forheignTable = this.mdb.tables.get(fieldOptions.hasOne);
-          if (forheignTable?.data?.has(value)) {
+
+          if (
+            fieldOptions?.fhField &&
+            forheignTable?.options?.fields?.[fieldOptions?.fhField]?.hasMany &&
+            forheignTable?.data?.has(value)
+          ) {
             //CREATE SET IF NOT EXISTS ON PIVOT
             if (!pivotTable.data.has(value)) {
               pivotTable.data.set(value, new Set());
@@ -228,7 +284,6 @@ class RecordHandler {
                 pivotTable.data.delete(old_value);
               }
             }
-
             pivotTable.data.get(value).add(target[this.id]);
           }
         }
