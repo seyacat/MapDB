@@ -19,6 +19,6 @@ const juan = usuarios.insert({ nombre: "Juan", email: "juan@juan.com" });
 //TODO SHOW PARENT
 const auto1 = automoviles.insert({ marca: "fiat", usuario: juan.id });
 
-console.log({ pablo, juan });
-console.log(auto1);
-console.log(mdb.describe());
+//console.log({ pablo, juan });
+//console.log(auto1);
+//console.log(mdb.describe());

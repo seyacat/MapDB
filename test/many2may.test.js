@@ -5,7 +5,10 @@ import chai from "chai";
 const mdb = new MapDb();
 
 const cursos = mdb.createTable("cursos", {
-  fields: { name: { unique: true }, estudiantes: { hasMany: "estudiantes" } },
+  fields: {
+    name: { unique: true },
+    estudiantes: { hasMany: "estudiantes", fhField: "cursos" },
+  },
 });
 
 it("Unique field duplication", function () {
@@ -22,7 +25,10 @@ it("Unique field duplication", function () {
 });
 
 const estudiantes = mdb.createTable("estudiantes", {
-  fields: { name: { unique: true }, cursos: { hasMany: "cursos" } },
+  fields: {
+    name: { unique: true },
+    cursos: { hasMany: "cursos", fhField: "estudiantes" },
+  },
 });
 
 const curso1 = cursos.insert({ name: "matematicas" });
@@ -34,6 +40,13 @@ const estudiante2 = estudiantes.insert({ name: "pedro" });
 const estudiante3 = estudiantes.insert({ name: "maria" });
 
 curso1.attach("estudiantes", estudiante1.id);
+
+it("Wrong configuration hasMany", function () {
+  assert.equal(estudiante1.cursos, "[...]");
+  assert.equal(curso1.estudiantes, "[...]");
+  assert.equal(estudiante1.cursos_data?.length, 1);
+  assert.equal(curso1.estudiantes_data?.length, 1);
+});
 
 it("Wrong configuration hasMany", function () {
   chai

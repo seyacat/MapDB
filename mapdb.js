@@ -127,8 +127,8 @@ class RecordHandler {
           const fieldOptions = this.options?.fields?.[prop];
           const pivotTableName = this.options.fields[prop].pivotTable;
           const pivotTable = this.mdb.tables.get(pivotTableName);
-          const childIds = pivotTable.data.get(target[this.id]);
-          if (childIds?.length) {
+          const childIds = pivotTable.data.get(this.name + target[this.id]);
+          if (childIds?.size) {
             return "[...]";
           } else {
             return null;
@@ -139,7 +139,7 @@ class RecordHandler {
           const pivotTableName = this.options.fields[field].pivotTable;
           const pivotTable = this.mdb.tables.get(pivotTableName);
           const forheignTable = this.mdb.tables.get(fieldOptions.hasMany);
-          const childIds = pivotTable.data.get(target[this.id]);
+          const childIds = pivotTable.data.get(this.name + target[this.id]);
           if (!childIds) return null;
           const childs = [];
           for (const childId of childIds) {
@@ -164,7 +164,7 @@ class RecordHandler {
           const parent = forheignTable.data.get(target[field]);
           return parent;
         }
-
+        //ATTACH FUNCTION
         if (prop === "attach") {
           //MANY TO MANY ATTACH
           return function (field, forheignId) {
@@ -184,10 +184,26 @@ class RecordHandler {
             }
 
             //CREATE SET IF NOT EXISTS
-            if (!pivotTable.data.has(target[this.id])) {
-              pivotTable.data.set(target[this.id], new Set());
+            if (!pivotTable.data.has(this.name + target[this.id])) {
+              pivotTable.data.set(this.name + target[this.id], new Set());
             }
-            pivotTable.data.get(target[this.id]).add(forheignId);
+            pivotTable.data.get(this.name + target[this.id]).add(forheignId);
+
+            //TODO POPULATE FORHEIGN DATA
+            if (
+              fieldOptions?.fhField &&
+              forheignTable?.options?.fields?.[fieldOptions?.fhField]
+                ?.hasMany &&
+              forheignTable?.data?.has(forheignId)
+            ) {
+              insertInFhTable.bind(this)(
+                target,
+                field,
+                forheignId,
+                null,
+                forheignTable
+              );
+            }
 
             return;
           }.bind(this);
@@ -264,28 +280,19 @@ class RecordHandler {
         }
         //forheign data
 
-        if (fieldOptions?.hasOne) {
-          const pivotTableName = this.options.fields[key].pivotTable;
-          const pivotTable = this.mdb.tables.get(pivotTableName);
-
-          if (
-            fieldOptions?.fhField &&
-            forheignTable?.options?.fields?.[fieldOptions?.fhField]?.hasMany &&
-            forheignTable?.data?.has(value)
-          ) {
-            //CREATE SET IF NOT EXISTS ON PIVOT
-            if (!pivotTable.data.has(value)) {
-              pivotTable.data.set(value, new Set());
-            }
-            if (pivotTable.data.has(old_value)) {
-              pivotTable.data.get(old_value).delete(target[this.id]);
-              //DELETE SET IF ITS NULL
-              if (pivotTable.data.get(old_value).size <= 0) {
-                pivotTable.data.delete(old_value);
-              }
-            }
-            pivotTable.data.get(value).add(target[this.id]);
-          }
+        //FILL FORHEIGH
+        if (
+          fieldOptions?.fhField &&
+          forheignTable?.options?.fields?.[fieldOptions?.fhField]?.hasMany &&
+          forheignTable?.data?.has(value)
+        ) {
+          insertInFhTable.bind(this)(
+            target,
+            key,
+            value,
+            old_value,
+            forheignTable
+          );
         }
 
         target[key] = value;
@@ -293,6 +300,26 @@ class RecordHandler {
       }.bind(table),
     };
   }
+}
+
+function insertInFhTable(target, key, value, old_value, forheignTable) {
+  const fhpivotTableName = this.options.fields[key].pivotTable;
+  const pivotFhTable = this.mdb.tables.get(fhpivotTableName);
+  //CREATE SET IF NOT EXISTS ON PIVOT
+  if (!pivotFhTable.data.has(forheignTable.name + value)) {
+    pivotFhTable.data.set(forheignTable.name + value, new Set());
+  }
+  if (pivotFhTable.data.has(forheignTable.name + old_value)) {
+    pivotFhTable.data
+      .get(forheignTable.name + old_value)
+      .delete(target[this.id]);
+    //DELETE SET IF ITS NULL
+    if (pivotFhTable.data.get(forheignTable.name + old_value).size <= 0) {
+      pivotFhTable.data.delete(forheignTable.name + old_value);
+    }
+  }
+
+  pivotFhTable.data.get(forheignTable.name + value).add(target[this.id]);
 }
 
 function randomHexString(size = 40) {
