@@ -30,6 +30,7 @@ class Table {
     if (options?.fields) {
       let testMultipleIds;
       for (const [field, properties] of Object.entries(options.fields)) {
+        let testDualRelationship;
         //VALIDATE OPTIONS
         //MULTIPLE IDS
         if (properties?.id) {
@@ -44,16 +45,33 @@ class Table {
           this.uniques.set(field, new Map());
         }
         if (properties?.hasOne) {
-          properties.pivotTable = `${properties.hasOne}-${this.name}-${field}`;
-          this.mdb.createTable(properties.pivotTable);
+          const relatedTables = [this.name, properties.hasOne];
+          relatedTables.sort();
+          properties.pivotTable = `${relatedTables.join("-")}`;
+          try {
+            this.mdb.createTable(properties.pivotTable);
+          } catch (e) {}
+          testDualRelationship = true;
+        }
+        if (properties?.hasMany) {
+          if (testDualRelationship) {
+            throw new Error(
+              `Multiple relationship configured in this field. ${field}`
+            );
+          }
+          const relatedTables = [this.name, properties.hasMany];
+          relatedTables.sort();
+          properties.pivotTable = `${relatedTables.join("-")}`;
+          try {
+            this.mdb.createTable(properties.pivotTable);
+          } catch (e) {}
         }
       }
     }
-
-    //CREATE ONE-MANY RELATION
-    for (const hasOneField of options?.hasOne ?? []) {
-    }
   }
+  toString = function () {
+    return describe();
+  };
   describe() {
     return { id: this.id, name: this.name, options: this.options };
   }
@@ -62,7 +80,6 @@ class Table {
       throw new error("Wrong data type");
     }
 
-    //TODO MOVE CHECKS TO PROXY
     //CHECK ID EXIST IN OBJECTS
     if (this.id == "id" && !data[this.id]) {
       data[this.id] = randomHexString();
@@ -90,8 +107,6 @@ class Table {
 
     this.data.set(data[this.id], record);
 
-    //TODO fill oneMany relationship
-
     return record;
   }
 }
@@ -99,7 +114,40 @@ class Table {
 class RecordHandler {
   constructor(table) {
     return {
-      //get: (target, prop, receiver) => {},
+      get: function (target, prop, receiver) {
+        if (this.options?.fields?.[prop]?.hasMany) {
+          const fieldOptions = this.options?.fields?.[prop];
+          const pivotTableName = this.options.fields[prop].pivotTable;
+          const pivotTable = this.mdb.tables.get(pivotTableName);
+          const forheignTable = this.mdb.tables.get(fieldOptions.hasMany);
+          const childIds = pivotTable.data.get(target[this.id]);
+          if (!childIds) return null;
+          const childs = [];
+          for (const childId of childIds) {
+            childs.push(forheignTable.data.get(childId));
+          }
+          return childs;
+        }
+
+        if (prop === "attach") {
+          //MANY TO MANY ATTACH
+          return function (field, id) {
+            if (
+              !this.options?.fields?.[field]?.pivotTable ||
+              !this.options?.fields?.[field]?.hasMany
+            ) {
+              throw new Error(`Not valid hasMany field (${field})`);
+            }
+            const fieldOptions = this.options?.fields?.[field];
+            const pivotTableName = this.options.fields[field].pivotTable;
+            const pivotTable = this.mdb.tables.get(pivotTableName);
+            const forheignTable = this.mdb.tables.get(fieldOptions.hasMany);
+            return;
+          }.bind(this);
+        } else {
+          return target[prop];
+        }
+      }.bind(table),
       set: function (target, key, value, proxy) {
         const old_value = target[key];
         const fieldOptions = this.options?.fields?.[key];
@@ -149,7 +197,7 @@ class RecordHandler {
           const pivotTableName = this.options.fields[key].pivotTable;
           const pivotTable = this.mdb.tables.get(pivotTableName);
           const forheignTable = this.mdb.tables.get(fieldOptions.hasOne);
-          if (forheignTable.data.has(value)) {
+          if (forheignTable?.data?.has(value)) {
             //CREATE SET IF NOT EXISTS ON PIVOT
             if (!pivotTable.data.has(value)) {
               pivotTable.data.set(value, new Set());

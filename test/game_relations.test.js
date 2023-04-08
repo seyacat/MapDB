@@ -4,7 +4,9 @@ import chai from "chai";
 
 const mdb = new MapDb();
 
-const games = mdb.createTable("games", { fields: { name: { unique: true } } });
+const games = mdb.createTable("games", {
+  fields: { name: { unique: true }, rooms: { hasMany: "rooms" } },
+});
 const rooms = mdb.createTable("rooms", {
   fields: {
     name: { unique: true },
@@ -17,7 +19,7 @@ const players = mdb.createTable("players");
 const game1 = games.insert({});
 const game2 = games.insert({ name: "game2" });
 
-const room1 = rooms.insert({ game: game1.id });
+const room1 = rooms.insert({ game: game1.id, premio: "uno" });
 room1.game = game2.id;
 
 it("Invalid Parent", function () {
@@ -36,16 +38,19 @@ it("Invalid Parent", function () {
 const room2 = rooms.insert({ name: "room2", game: game1.id });
 const room3 = rooms.insert({ name: "room3", game: game1.id });
 const room4 = rooms.insert({ name: "room4", game: game1.id });
-const pivotTable = mdb.tables.get("games-rooms-game");
+
+const pivotTable = mdb.tables.get(
+  mdb.tables.get("rooms").options.fields.game.pivotTable
+);
 
 it("Test pivot sizes1", function () {
-  assert.equal(pivotTable.data.get(game1.id).size, 3);
-  assert.equal(pivotTable.data.get(game2.id).size, 1);
+  assert.equal(game1.rooms.length, 3);
+  assert.equal(game2.rooms.length, 1);
   room4.game = game2.id;
-  assert.equal(pivotTable.data.get(game1.id).size, 2);
-  assert.equal(pivotTable.data.get(game2.id).size, 2);
+  assert.equal(game1.rooms.length, 2);
+  assert.equal(game2.rooms.length, 2);
   room1.game = game1.id;
   room4.game = game1.id;
-  assert.equal(pivotTable.data.get(game1.id).size, 4);
-  assert.equal(pivotTable.data.get(game2.id), undefined);
+  assert.equal(game1.rooms.length, 4);
+  assert.equal(game2.rooms, null);
 });
