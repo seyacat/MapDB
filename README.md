@@ -1,4 +1,5 @@
 # MapDB
 
-[Español](/blob/main/docs/Readme_es.md)
-[Ingles](/blob/main/docs/Readme_en.md)
+[Español](docs/Readme_es.md)
+
+[Ingles](docs/Readme_en.md)
