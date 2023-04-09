@@ -17,7 +17,11 @@ it("Unique field duplication", function () {
       mdb.createTable("estudiantes1", {
         fields: {
           name: { unique: true },
-          cursos: { hasMany: "estudiantes", hasOne: "estudiantes" },
+          cursos: {
+            hasMany: "estudiantes",
+            hasOne: "estudiantes",
+            fhField: "cursos",
+          },
         },
       });
     })
@@ -46,6 +50,13 @@ it("Wrong configuration hasMany", function () {
   assert.equal(curso1.estudiantes, "[...]");
   assert.equal(estudiante1.cursos_data?.length, 1);
   assert.equal(curso1.estudiantes_data?.length, 1);
+  curso1.attach("estudiantes", estudiante2.id);
+  assert.equal(estudiante2.cursos_data?.length, 1);
+  assert.equal(curso1.estudiantes_data?.length, 2);
+  estudiante2.attach("cursos", curso1.id);
+  estudiante2.attach("cursos", curso2.id);
+  assert.equal(estudiante2.cursos_data?.length, 2);
+  estudiante2.detach("cursos", curso2.id);
 });
 
 it("Wrong configuration hasMany", function () {

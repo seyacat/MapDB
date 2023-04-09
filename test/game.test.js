@@ -4,12 +4,23 @@ import chai from "chai";
 
 const mdb = new MapDb();
 
-const games = mdb.createTable("games", { fields: { name: { unique: true } } });
+const games = mdb.createTable("games", {
+  fields: {
+    name: { unique: true },
+    rooms: { hasMany: "rooms", fhField: "game" },
+  },
+});
 const rooms = mdb.createTable("rooms", {
   fields: {
     name: { unique: true },
-    game: { hasOne: "games", required: true },
-    players: { hasMany: true },
+    game: { hasOne: "games", fhField: "rooms", required: true },
+    players: { hasMany: "players", fhField: "room" },
+  },
+});
+
+const players = mdb.createTable("players", {
+  fields: {
+    room: { hasOne: "rooms", fhField: "players" },
   },
 });
 
@@ -25,7 +36,7 @@ it("Unique field duplication", function () {
 
 const game2 = games.insert({ name: "juego2", desc: "j1" });
 
-const room1 = rooms.insert({ game: "game1" });
+const room1 = rooms.insert({ game: game1.id });
 
 it("Empty unique field duplication", function () {
   chai
@@ -35,7 +46,7 @@ it("Empty unique field duplication", function () {
     .to.throw("Record duplicated. name:null");
 });
 
-const room2 = rooms.insert({ name: "room2", game: "game1" });
+const room2 = rooms.insert({ name: "room2", game: game1.id });
 room2.test = "hola";
 
 it("Unique field duplication on insert", function () {
