@@ -172,10 +172,17 @@ class RecordHandler {
               throw new Error(`Not valid hasMany field (${field})`);
             }
             const fieldOptions = this.options?.fields?.[field];
+            const fhFieldName = fieldOptions.fhField;
             const pivotTableName = this.options.fields[field].pivotTable;
             const pivotTable = this.mdb.tables.get(pivotTableName);
             const forheignTable = this.mdb.tables.get(fieldOptions.hasMany);
-            const fhField = this.options?.fields?.fhField;
+            let fhFieldOptions = forheignTable.options?.fields?.[fhFieldName];
+            let oldId;
+            if (fhFieldOptions.hasOne) {
+              oldId = forheignTable.data.get();
+              console.log(oldId);
+            }
+
             //VALIDATE REMOTE ID
             if (!forheignTable.data.get(forheignId)) {
               throw new Error(`Not valid forheign Id (${forheignId})`);
@@ -194,6 +201,7 @@ class RecordHandler {
               pivotTable
             );
             //pivotTable.data.get(this.name + target[this.id]).add(forheignId);
+            // REMOVE OLD RELATION
 
             //TODO POPULATE FORHEIGN DATA
             if (
@@ -222,17 +230,27 @@ class RecordHandler {
       set: function (target, key, value, proxy) {
         const old_value = target[key];
         const fieldOptions = this.options?.fields?.[key];
+        let fhFieldOptions;
         let forheignTable;
+        let fhPivotTableName;
+        let fhPivotTable;
+        const fhField = fieldOptions.fhField;
 
         if (fieldOptions?.hasOne) {
           forheignTable = fieldOptions?.hasOne
             ? this.mdb.tables.get(fieldOptions.hasOne)
             : null;
+          fhFieldOptions = forheignTable.options?.[fieldOptions.hasOne];
+          fhPivotTableName = fhFieldOptions.pivotTable;
+          fhPivotTable = this.mdb.tables.get(fhPivotTableName);
         }
         if (fieldOptions?.hasMany) {
           forheignTable = fieldOptions?.hasMany
             ? this.mdb.tables.get(fieldOptions.hasMany)
             : null;
+          fhFieldOptions = forheignTable.options?.[fieldOptions.hasMany];
+          fhPivotTableName = fhFieldOptions.pivotTable;
+          fhPivotTable = this.mdb.tables.get(fhPivotTableName);
         }
 
         //CHECK REQUIRED
@@ -242,13 +260,13 @@ class RecordHandler {
         //CHECK FOREING
         if (
           (fieldOptions?.hasOne || fieldOptions?.hasMany) &&
-          fieldOptions?.fhField &&
-          !forheignTable?.options?.fields?.[fieldOptions?.fhField]
+          fhField &&
+          !forheignTable?.options?.fields?.[fhField]
         ) {
           throw new Error(
             `Table (${this.name}) configuration required on forheigh table (${
               forheignTable?.name
-            }) field (${fieldOptions?.fhField}) ${
+            }) field (${fhField}) ${
               fieldOptions?.hasOne ?? fieldOptions?.hasMany
             }`
           );
@@ -256,7 +274,7 @@ class RecordHandler {
         if (
           fieldOptions?.hasOne &&
           fieldOptions?.fhField &&
-          forheignTable?.options?.fields?.[fieldOptions?.fhField] &&
+          forheignTable?.options?.fields?.[fhField] &&
           !forheignTable?.data.get(value)
         ) {
           throw new Error(
@@ -289,17 +307,21 @@ class RecordHandler {
           this.uniques.get(key).set(value);
         }
         //forheign data
-
+        /*if (fieldOptions.hasOne) {
+          insertInPivotTable(
+            target[this.id],
+            null,
+            value,
+            this,
+            pivotTable
+          );
+        }*/
         //FILL FORHEIGH
         if (
-          fieldOptions?.fhField &&
+          fhField &&
           forheignTable?.options?.fields?.[fieldOptions?.fhField]?.hasMany &&
           forheignTable?.data?.has(value)
         ) {
-          console.log();
-          const fhPivotTableName =
-            forheignTable.options.fields[fieldOptions?.fhField].pivotTable;
-          const fhPivotFhTable = this.mdb.tables.get(fhPivotTableName);
           insertInPivotTable(
             value,
             old_value,
