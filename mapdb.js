@@ -178,9 +178,12 @@ class RecordHandler {
             const forheignTable = this.mdb.tables.get(fieldOptions.hasMany);
             let fhFieldOptions = forheignTable.options?.fields?.[fhFieldName];
             let oldId;
+
+            //UPDATE DATA TO HAS ONE
             if (fhFieldOptions.hasOne) {
-              oldId = forheignTable.data.get();
-              console.log(oldId);
+              oldId = forheignTable.data.get(forheignId);
+              oldId[fhFieldName] = target[this.id];
+              return;
             }
 
             //VALIDATE REMOTE ID
