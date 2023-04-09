@@ -6,7 +6,7 @@
   "main": "mapdb.js",
   "scripts": {
     "demo": "node ./test/demo.js",
-    "test": "mocha --reporter list",
+    "test": "c8 --reporter=lcov mocha --reporter list",
     "test:watch": "mocha --watch --parallel --reporter list"
   },
   "repository": {
