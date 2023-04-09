@@ -192,7 +192,7 @@ class RecordHandler {
             if (!pivotTable.data.has(this.name + target[this.id])) {
               pivotTable.data.set(this.name + target[this.id], new Set());
             }
-            //POLULATE PIVO TBLE
+            //POLULATE PIVOTABLE
             insertInPivotTable(
               target[this.id],
               null,
@@ -200,7 +200,7 @@ class RecordHandler {
               this,
               pivotTable
             );
-            //pivotTable.data.get(this.name + target[this.id]).add(forheignId);
+
             // REMOVE OLD RELATION
 
             //TODO POPULATE FORHEIGN DATA
@@ -231,24 +231,24 @@ class RecordHandler {
         const old_value = target[key];
         const fieldOptions = this.options?.fields?.[key];
         let fhFieldOptions;
-        let forheignTable;
+        let fhTable;
         let fhPivotTableName;
         let fhPivotTable;
-        const fhField = fieldOptions.fhField;
+        const fhField = fieldOptions?.fhField;
 
         if (fieldOptions?.hasOne) {
-          forheignTable = fieldOptions?.hasOne
+          fhTable = fieldOptions?.hasOne
             ? this.mdb.tables.get(fieldOptions.hasOne)
             : null;
-          fhFieldOptions = forheignTable.options?.[fieldOptions.hasOne];
+          fhFieldOptions = fhTable.options?.fields?.[fhField];
           fhPivotTableName = fhFieldOptions.pivotTable;
           fhPivotTable = this.mdb.tables.get(fhPivotTableName);
         }
         if (fieldOptions?.hasMany) {
-          forheignTable = fieldOptions?.hasMany
+          fhTable = fieldOptions?.hasMany
             ? this.mdb.tables.get(fieldOptions.hasMany)
             : null;
-          fhFieldOptions = forheignTable.options?.[fieldOptions.hasMany];
+          fhFieldOptions = fhTable.options?.fields?.[fhField];
           fhPivotTableName = fhFieldOptions.pivotTable;
           fhPivotTable = this.mdb.tables.get(fhPivotTableName);
         }
@@ -258,14 +258,10 @@ class RecordHandler {
           throw new Error(`Field (${key}) required`);
         }
         //CHECK FOREING
-        if (
-          (fieldOptions?.hasOne || fieldOptions?.hasMany) &&
-          fhField &&
-          !forheignTable?.options?.fields?.[fhField]
-        ) {
+        if (!fhTable && (fieldOptions?.hasOne || fieldOptions?.hasMany)) {
           throw new Error(
             `Table (${this.name}) configuration required on forheigh table (${
-              forheignTable?.name
+              fhTable?.name
             }) field (${fhField}) ${
               fieldOptions?.hasOne ?? fieldOptions?.hasMany
             }`
@@ -274,8 +270,8 @@ class RecordHandler {
         if (
           fieldOptions?.hasOne &&
           fieldOptions?.fhField &&
-          forheignTable?.options?.fields?.[fhField] &&
-          !forheignTable?.data.get(value)
+          fhTable?.options?.fields?.[fhField] &&
+          !fhTable?.data.get(value)
         ) {
           throw new Error(
             `Not valid parent for field ${key}:${value} required`
@@ -306,28 +302,20 @@ class RecordHandler {
           this.uniques.get(key).delete(old_value);
           this.uniques.get(key).set(value);
         }
-        //forheign data
-        /*if (fieldOptions.hasOne) {
-          insertInPivotTable(
-            target[this.id],
-            null,
-            value,
-            this,
-            pivotTable
-          );
-        }*/
+
         //FILL FORHEIGH
         if (
           fhField &&
-          forheignTable?.options?.fields?.[fieldOptions?.fhField]?.hasMany &&
-          forheignTable?.data?.has(value)
+          fhPivotTable &&
+          fhTable?.options?.fields?.[fieldOptions?.fhField]?.hasMany &&
+          fhTable?.data?.has(value)
         ) {
           insertInPivotTable(
             value,
             old_value,
             target[this.id],
-            forheignTable,
-            fhPivotFhTable
+            fhTable,
+            fhPivotTable
           );
         }
 
