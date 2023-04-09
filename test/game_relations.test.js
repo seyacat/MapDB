@@ -53,8 +53,6 @@ const player1 = players.insert({ name: "player1", room: room2.id });
 const pivotTable = mdb.tables.get(
   mdb.tables.get("rooms").options.fields.game.pivotTable
 );
-console.log(game1);
-console.log(room1.game_data);
 it("Test pivot sizes1", function () {
   assert.equal(game1.rooms_data?.length, 2);
   assert.equal(game2.rooms_data?.length, 2);
@@ -66,8 +64,6 @@ it("Test pivot sizes1", function () {
   assert.equal(game1.rooms_data?.length, 3);
   assert.equal(game2.rooms_data?.length, 1);
   game1.attach("rooms", room3.id);
-  console.log(game1.rooms_data);
-  console.log(game2.rooms_data);
   assert.equal(game1.rooms_data.length, 4);
   assert.equal(game2.rooms_data?.length, null);
   game2.attach("rooms", room3.id);
