@@ -4,10 +4,9 @@ MapDB es una herramienta para manejar relaciones entre objetos como lo hace una 
 
 ## Instalación
 
-TODO
-## Installation
-TODO
-
+```
+npm i --save @seyacat/mapdb
+```
 ## Usage
 
 Importar en el proyecto
@@ -29,20 +28,25 @@ npm run test
 ```
 
 ## Support
-Escriba sin problema a seyacat@gmail.com o genere un caso
+Escriba sin problema a seyacat@gmail.com ó genere un caso
 
 ## Roadmap
-TODO
+
+Validadores de campos
+Integracion con Redis
 
 ## Contributing
 
+seyacat@gmail.com
 
 ## Authors and acknowledgment
 
+Santiago Andrade (seyacat)
+
 ## License
-Creative Commons 0
+ISC
 
 ## Project status
-Iniciando
+Etapa temprana
 
 
