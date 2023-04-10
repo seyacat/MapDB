@@ -2,7 +2,7 @@
 
 MapDB is a tool for managing relationships between objects like a database does.
 
-## Instalación
+## Instalation
 
 ```
 npm i --save @seyacat/mapdb
