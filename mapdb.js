@@ -22,6 +22,7 @@ class Table {
   //TODO Redis integration
   //TODO FIX UNIQUES BUG
   //uniques: Map { name: ❗Cannot read properties of null (reading 'toString') },
+  //TODO Test one to one feature
   uniques = new Map();
   constructor(mdb, tablename, options) {
     this.mdb = mdb;
