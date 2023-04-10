@@ -21,14 +21,15 @@ const mdb = new MapDB();
 ## Classes
 
 MapDB: Main class, contains all the structure and data
-* Tables: contains Map of Tables
+* Tables: contains Map of Tables.
 
 Table: Contains the records and settings of a collection of objects.
-* mdb: parent MapDB object
-* id: unique table id
-* name: unique table name
-* options: contains fields configurations
-* data: contains Map of records
+* mdb: parent MapDB object.
+* id: unique table id.
+* name: unique table name.
+* options: contains fields configurations.
+* data: contains Map of records.
+* insert(name,options): Insert record function.
 
 Record: Is a proxy object created with Table.insert() method.
 * attach: reserved trapped function for attach relation on hasOne and hasMany properties.
@@ -38,11 +39,11 @@ To retrieve the data of a related field it is necessary to prepend "_data", this
 
 ## Field Properties
 
-* [x] unique
-* [x] required: non null
-* [x] hasOne: property than contains table name for the record that has related a single parent
-* [x] hamMany: property than contains table name for the record that has related many children
-* [x] fhField: property than contains field name of related table, required on fields with hasMany and hasOne property
+* [x] unique.
+* [x] required: non null.
+* [x] hasOne: property than contains table name for the record that has related a single parent.
+* [x] hamMany: property than contains table name for the record that has related many children.
+* [x] fhField: property than contains field name of related table, required on fields with hasMany and hasOne property.
 
 ## Usage
 
@@ -158,10 +159,10 @@ Write without problem to seyacat@gmail.com or create an issue.
 
 ## Roadmap
 
-* [ ] Typescript types
-* [ ] Delete records
-* [ ] Validate fields
-* [ ] Redis Database integration 
+* [ ] Typescript types.
+* [ ] Delete records.
+* [ ] Validate fields.
+* [ ] Redis Database integration.
 
 ## Contributing
 
