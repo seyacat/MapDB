@@ -38,11 +38,11 @@ To retrieve the data of a related field it is necessary to prepend "_data", this
 
 ## Field Properties
 
-[x] unique
-[x] required: non null
-[x] hasOne: property than contains table name for the record that has related a single parent
-[x] hamMany: property than contains table name for the record that has related many children
-[x] fhField: property than contains field name of related table, required on fields with hasMany and hasOne property
+* [x] unique
+* [x] required: non null
+* [x] hasOne: property than contains table name for the record that has related a single parent
+* [x] hamMany: property than contains table name for the record that has related many children
+* [x] fhField: property than contains field name of related table, required on fields with hasMany and hasOne property
 
 ## Usage
 
@@ -112,6 +112,7 @@ console.log(game1.rooms_data);
 console.log(room1.game_data);
 ```
 
+Many to Many example
 ```
 const { MapDB } = require("@seyacat/mapdb");
 const mdb = new MapDB();
@@ -157,10 +158,10 @@ Write without problem to seyacat@gmail.com or create an issue.
 
 ## Roadmap
 
-[ ] Typescript types
-[ ] Delete records
-[ ] Validate fields
-[ ] Redis Database integration 
+* [ ] Typescript types
+* [ ] Delete records
+* [ ] Validate fields
+* [ ] Redis Database integration 
 
 ## Contributing
 
