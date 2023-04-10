@@ -1,7 +1,8 @@
-import MapDb from "../mapdb.js";
-import chai, { assert } from "chai";
+const { MapDB } = require("../mapdb.js");
+const chai = require("chai");
+const assert = require("assert");
 
-const mdb = new MapDb();
+const mdb = new MapDB();
 
 const emails = mdb.createTable("emails", { fields: { email: { id: true } } });
 

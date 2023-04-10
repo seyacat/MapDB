@@ -1,6 +1,6 @@
-import MapDb from "../mapdb.js";
+const { MapDB } = require("../mapdb.js");
 
-const mdb = new MapDb();
+const mdb = new MapDB();
 
 const usuarios = mdb.createTable("usuarios", {
   fields: {

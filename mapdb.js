@@ -1,6 +1,6 @@
-import Crypto from "crypto";
+const Crypto = require("crypto");
 
-export default class {
+class MapDB {
   constructor() {
     this.tables = new Map();
   }
@@ -417,3 +417,5 @@ function insertInPivotTable(id, old_id, value, table, pivotTable) {
 function randomHexString(size = 40) {
   return Crypto.randomBytes(size).toString("hex").slice(0, size);
 }
+
+module.exports = { MapDB };

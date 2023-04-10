@@ -1,13 +1,25 @@
 # MapDB
 
-MapDB es una pequeña base relacional en memoria para hacer prototipos rápidos.
+MapDB es una herramienta para manejar relaciones entre objetos como lo hace una base de datos.
 
 ## Instalación
 
 TODO
-
-## Integrate with your tools
+## Installation
 TODO
+
+## Usage
+
+Importar en el proyecto
+```
+const { MapDB } = require("@seyacat/mapdb");
+const mdb = new MapDB();
+```
+
+```
+import { MapDB } from "@seyacat/mapdb";
+const mdb = new MapDB();
+```
 
 ## Test
 
@@ -15,17 +27,6 @@ Test integrado con Mocha
 ```
 npm run test
 ```
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Installation
-TODO
-
-## Usage
-TODO
 
 ## Support
 Escriba sin problema a seyacat@gmail.com o genere un caso
@@ -43,3 +44,5 @@ Creative Commons 0
 
 ## Project status
 Iniciando
+
+

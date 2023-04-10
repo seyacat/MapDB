@@ -1,8 +1,8 @@
-import MapDb from "../mapdb.js";
-import assert from "assert";
-import chai from "chai";
+const { MapDB } = require("../mapdb.js");
+const chai = require("chai");
+const assert = require("assert");
 
-const mdb = new MapDb();
+const mdb = new MapDB();
 
 let users = mdb.createTable("users");
 it("Duplicated Tables", function () {

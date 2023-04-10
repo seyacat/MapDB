@@ -1,8 +1,7 @@
 {
-  "name": "mapdb",
-  "type": "module",
+  "name": "@seyacat/mapdb",
   "version": "1.0.0",
-  "description": "Simple Map Objects memory database",
+  "description": "Tool for managing relationships between objects like a database does.",
   "main": "mapdb.js",
   "scripts": {
     "demo": "node ./test/demo.js",
@@ -11,18 +10,21 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@gitlab.com/seyanim/mapdb.git"
+    "url": "git+ssh://git@github.com:seyacat/MapDB.git"
   },
-  "author": "",
+  "author": "gatoseya",
   "license": "ISC",
   "bugs": {
-    "url": "https://gitlab.com/seyanim/mapdb/issues"
+    "url": "https://github.com/seyacat/MapDB/issues"
   },
-  "homepage": "https://gitlab.com/seyanim/mapdb#readme",
+  "homepage": "https://github.com/seyacat/MapDB",
   "devDependencies": {
     "chai": "^4.3.7",
     "eslint-plugin-prettier": "^4.2.1",
     "mocha": "^10.2.0",
     "prettier": "2.8.7"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
   }
 }
