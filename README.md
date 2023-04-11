@@ -31,7 +31,7 @@ Table: Contains the records and settings of a collection of objects.
 * options: contains fields configurations.
 * data: contains Map of records.
 * insert(object): Insert record function.
-* delete(id): delete record
+* delete(object || id): delete record
 
 Record: Is a proxy object created with Table.insert() method.
 * attach: reserved trapped function for attach relation on hasOne and hasMany properties.

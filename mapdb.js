@@ -119,8 +119,16 @@ class Table {
 
     return record;
   }
-  delete(id) {
-    const record = this.data.get(id);
+  delete(obOrId) {
+    let id;
+    let record;
+    if (typeof obOrId === "object") {
+      record = obOrId;
+      id = record[this.id];
+    } else {
+      id = obOrId;
+      record = this.data.get(obOrId);
+    }
     //REMOVE RELATED DATA
     if (this.options?.fields) {
       for (const [field, properties] of Object.entries(this.options.fields)) {
