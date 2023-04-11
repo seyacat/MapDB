@@ -80,3 +80,6 @@ it("Wrong configuration hasMany", function () {
 });
 
 //console.log(mdb.describe());
+//SHOW RELATED DATA
+//console.log( curso1.estudiantes_data );
+//console.log( estudiante1.cursos_data );

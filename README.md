@@ -46,7 +46,7 @@ To retrieve the data of a related field it is necessary to prepend "_data", this
 * [x] required: non null.
 * [x] match: validation regexp //TODO ready but not tested
 * [x] hasOne: property than contains table name for the record that has related a single parent. 
-* [x] hamMany: property than contains table name for the record that has related many children.
+* [x] hasMany: property than contains table name for the record that has related many children.
 * [x] fhField: property than contains field name of related table, required on fields with hasMany and hasOne property.
 
 ## Usage
@@ -116,11 +116,45 @@ room2.test = "hola";
 
 //SHOW OBJECTS WITHOUT RELATED DATA
 console.log(game1);
+/*{
+  id: '5384c954acbd25b15d6fb7e5f1b5c178762c837d',
+  name: 'juego1',
+  desc: 'j1',
+  rooms: null
+}*/
 console.log(room1);
+/*{
+  id: 'fd050c21a227a6db7774f03d5091e8f25ec969d9',
+  game: '5384c954acbd25b15d6fb7e5f1b5c178762c837d',
+  name: null,
+  players: null
+}*/
 
 //SHOW RELATED DATA
 console.log(game1.rooms_data);
+/*[
+  {
+    id: 'fd050c21a227a6db7774f03d5091e8f25ec969d9',
+    game: '5384c954acbd25b15d6fb7e5f1b5c178762c837d',
+    name: null,
+    players: null
+  },
+  {
+    id: '9c855aed893508ac0eb485e7d9d447985b776b81',
+    name: 'room2',
+    game: '5384c954acbd25b15d6fb7e5f1b5c178762c837d',
+    players: null,
+    test: 'hola'
+  }
+]*/
 console.log(room1.game_data);
+/*{
+  id: '5384c954acbd25b15d6fb7e5f1b5c178762c837d',
+  name: 'juego1',
+  desc: 'j1',
+  rooms: null
+}*/
+
 ```
 
 Many to Many example
@@ -154,8 +188,23 @@ estudiante2.attach("cursos", curso2.id);
 estudiante2.detach("cursos", curso1.id);
 
 //SHOW RELATED DATA
-console.log( curso1.estudiantes__data );
-console.log( estudiante1.cursos__data );
+console.log(curso1.estudiantes_data);
+/*[
+  {
+    id: '2af0fc5c3717a64cf8edf4595ba02ce548768a08',
+    name: 'juan',
+    cursos: null
+  }
+]*/
+console.log(estudiante1.cursos_data);
+/*[
+  {
+    id: '2d390151184d7a49a3980ba47ebbaae32d5ca598',
+    name: 'matematicas',
+    estudiantes: null
+  }
+]*/
+
 ```
 ## Test
 
@@ -176,11 +225,13 @@ Write without problem to seyacat@gmail.com or create an issue.
 
 ## Contributing
 
-seyacat@gmail.com
+Mail to seyacat@gmail.com
 
-## Authors and acknowledgment
+## Authors
 
 Santiago Andrade (seyacat)
+You can follow the develop of this live on twitch 22:00 GMT-5 
+https://www.twitch.tv/seyacat 
 
 ## License
 ISC
