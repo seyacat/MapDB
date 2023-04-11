@@ -44,8 +44,8 @@ To retrieve the data of a related field it is necessary to prepend "_data", this
 * [x] id: name of the Id field.
 * [x] unique.
 * [x] required: non null.
-* [x] hasOne: property than contains table name for the record that has related a single parent.
-* [x] match: validation regexp //TODO ready but not tested 
+* [x] match: validation regexp //TODO ready but not tested
+* [x] hasOne: property than contains table name for the record that has related a single parent. 
 * [x] hamMany: property than contains table name for the record that has related many children.
 * [x] fhField: property than contains field name of related table, required on fields with hasMany and hasOne property.
 
