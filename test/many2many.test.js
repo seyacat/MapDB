@@ -60,6 +60,7 @@ it("Wrong configuration hasMany", function () {
   estudiante2.detach("cursos", curso1.id);
   assert.equal(estudiante2.cursos_data?.length, 1);
   assert.equal(curso1.estudiantes_data?.length, 1);
+  estudiantes.delete(estudiante2.id);
 });
 
 it("Wrong configuration hasMany", function () {
