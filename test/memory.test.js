@@ -1,35 +1,35 @@
-const { MapDB } = require("../mapdb.js");
-const chai = require("chai");
-const assert = require("assert");
-const { table } = require("console");
+const { MapDB } = require('../mapdb.js');
+const chai = require('chai');
+const assert = require('assert');
+const { table } = require('console');
 
 const mdb = new MapDB();
 
-const testTable1 = mdb.createTable("testTable1", {
+const testTable1 = mdb.createTable('testTable1', {
   fields: {
     t1: { id: true },
-    t2: { hasOne: "testTable2", fhField: "t1" },
-    t3: { hasOne: "testTable3", fhField: "t1" },
-    t4: { hasMany: "testTable4", fhField: "t1" },
+    t2: { hasOne: 'testTable2', fhField: 't1' },
+    t3: { hasOne: 'testTable3', fhField: 't1' },
+    t4: { hasMany: 'testTable4', fhField: 't1' },
   },
 });
 
-const testTable2 = mdb.createTable("testTable2", {
+const testTable2 = mdb.createTable('testTable2', {
   fields: {
     t2: { id: true },
-    t1: { hasOne: "testTable1", fhField: "t2" },
+    t1: { hasOne: 'testTable1', fhField: 't2' },
   },
 });
 
-const testTable3 = mdb.createTable("testTable3", {
+const testTable3 = mdb.createTable('testTable3', {
   fields: {
-    t1: { hasMany: "testTable1", fhField: "t3" },
+    t1: { hasMany: 'testTable1', fhField: 't3' },
   },
 });
 
-const testTable4 = mdb.createTable("testTable4", {
+const testTable4 = mdb.createTable('testTable4', {
   fields: {
-    t1: { hasMany: "testTable1", fhField: "t4" },
+    t1: { hasMany: 'testTable1', fhField: 't4' },
   },
 });
 
@@ -37,7 +37,7 @@ const testTable4 = mdb.createTable("testTable4", {
   `${Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) / 100} MB`
 );*/
 
-for (let i = 0; i < 200; i++) {
+for (let i = 0; i < 20000; i++) {
   const t1 = testTable1.insert({
     t1: Math.random(),
     rand2: Math.random(),
@@ -96,12 +96,25 @@ for (let j = 0; j < 1000000; j++) {
   }
 }
 
-for (const t of mdb.tables) {
+/*for (const t of mdb.tables) {
   console.log(t[0], t[1].data.size);
-}
+}*/
 
-/*console.log(
-  `${Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) / 100} MB`
-);*/
+/*try {
+  if (global.gc) {
+    global.gc();
+  }
+} catch (e) {
+  console.log('`node --expose-gc index.js`');
+  process.exit();
+}*/
+
+/*setTimeout(() => {
+  console.log(
+    `${
+      Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) / 100
+    } MB`
+  );
+}, 2000);*/
 
 //TODO Assert comments
