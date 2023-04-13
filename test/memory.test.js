@@ -1,35 +1,35 @@
-const { MapDB } = require('../mapdb.js');
-const chai = require('chai');
-const assert = require('assert');
-const { table } = require('console');
+const { MapDB } = require("../mapdb.js");
+const chai = require("chai");
+const assert = require("assert");
+const { table } = require("console");
 
 const mdb = new MapDB();
 
-const testTable1 = mdb.createTable('testTable1', {
+const testTable1 = mdb.createTable("testTable1", {
   fields: {
     t1: { id: true },
-    t2: { hasOne: 'testTable2', fhField: 't1' },
-    t3: { hasOne: 'testTable3', fhField: 't1' },
-    t4: { hasMany: 'testTable4', fhField: 't1' },
+    t2: { hasOne: "testTable2", fhField: "t1" },
+    t3: { hasOne: "testTable3", fhField: "t1" },
+    t4: { hasMany: "testTable4", fhField: "t1" },
   },
 });
 
-const testTable2 = mdb.createTable('testTable2', {
+const testTable2 = mdb.createTable("testTable2", {
   fields: {
     t2: { id: true },
-    t1: { hasOne: 'testTable1', fhField: 't2' },
+    t1: { hasOne: "testTable1", fhField: "t2" },
   },
 });
 
-const testTable3 = mdb.createTable('testTable3', {
+const testTable3 = mdb.createTable("testTable3", {
   fields: {
-    t1: { hasMany: 'testTable1', fhField: 't3' },
+    t1: { hasMany: "testTable1", fhField: "t3" },
   },
 });
 
-const testTable4 = mdb.createTable('testTable4', {
+const testTable4 = mdb.createTable("testTable4", {
   fields: {
-    t1: { hasMany: 'testTable1', fhField: 't4' },
+    t1: { hasMany: "testTable1", fhField: "t4" },
   },
 });
 

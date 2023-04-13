@@ -1,30 +1,30 @@
-const { MapDB } = require('../mapdb');
+const { MapDB } = require("../mapdb");
 const mdb = new MapDB();
 
-const cursos = mdb.createTable('cursos', {
+const cursos = mdb.createTable("cursos", {
   fields: {
     name: { unique: true },
-    estudiantes: { hasMany: 'estudiantes', fhField: 'cursos' },
+    estudiantes: { hasMany: "estudiantes", fhField: "cursos" },
   },
 });
 
-const estudiantes = mdb.createTable('estudiantes', {
+const estudiantes = mdb.createTable("estudiantes", {
   fields: {
     name: { unique: true },
-    cursos: { hasMany: 'cursos', fhField: 'estudiantes' },
+    cursos: { hasMany: "cursos", fhField: "estudiantes" },
   },
 });
 
-const curso1 = cursos.insert({ name: 'matematicas' });
-const curso2 = cursos.insert({ name: 'fisica' });
-const curso3 = cursos.insert({ name: 'quimica' });
-const estudiante1 = estudiantes.insert({ name: 'juan' });
-const estudiante2 = estudiantes.insert({ name: 'pedro' });
-const estudiante3 = estudiantes.insert({ name: 'maria' });
-curso1.attach('estudiantes', estudiante1.id);
-curso1.attach('estudiantes', estudiante2.id);
-estudiante2.attach('cursos', curso2.id);
-estudiante2.detach('cursos', curso1.id);
+const curso1 = cursos.insert({ name: "matematicas" });
+const curso2 = cursos.insert({ name: "fisica" });
+const curso3 = cursos.insert({ name: "quimica" });
+const estudiante1 = estudiantes.insert({ name: "juan" });
+const estudiante2 = estudiantes.insert({ name: "pedro" });
+const estudiante3 = estudiantes.insert({ name: "maria" });
+curso1.attach("estudiantes", estudiante1.id);
+curso1.attach("estudiantes", estudiante2.id);
+estudiante2.attach("cursos", curso2.id);
+estudiante2.detach("cursos", curso1.id);
 
 //SHOW RELATED DATA
 //console.log(curso1.estudiantes_data);

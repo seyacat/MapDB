@@ -4,9 +4,19 @@ class MapDB {
   constructor() {
     this.tables = new Map();
   }
+  /**
+   * Return useful information about main class
+   * @returns
+   */
   describe() {
     return { tables: [...this.tables.keys()] };
   }
+  /**
+   * Create ne table
+   * @param {string} tablename
+   * @param {object} options
+   * @returns
+   */
   createTable(tablename, options) {
     //CHECK TABLE EXISTS
     if (this.tables.has(tablename)) {
@@ -18,17 +28,46 @@ class MapDB {
     return newtable;
   }
 }
+/**
+ * Table class
+ */
 class Table {
   //TODO Redis integration
   //TODO FIX UNIQUES BUG
   //uniques: Map { name: ❗Cannot read properties of null (reading 'toString') },
   //TODO Test one to one feature
+
   uniques = new Map();
   constructor(mdb, tablename, options) {
+    /**
+     * Main parent class
+     * @type {MapDB}
+     * @public
+     */
     this.mdb = mdb;
+    /**
+     * Unique table name
+     * @type {string}
+     * @public
+     */
     this.name = tablename;
+    /**
+     * Table options
+     * @type {Object}
+     * @public
+     */
     this.options = options;
+    /**
+     * Table data
+     * @type {Map}
+     * @public
+     */
     this.data = new Map();
+    /**
+     * Table id field name
+     * @type {string}
+     * @public
+     */
     this.id = "id";
     //CHECK IDS
     if (options?.fields) {
@@ -81,10 +120,18 @@ class Table {
       }
     }
   }
-
+  /**
+   * Return table useful information
+   * @returns
+   */
   describe() {
     return { id: this.id, name: this.name, options: this.options };
   }
+  /**
+   * Insert record
+   * @param {Object} data - record data
+   * @returns {Record} object
+   */
   insert(data) {
     if (typeof data != "object") {
       throw new Error("Wrong insert data type");
@@ -107,6 +154,7 @@ class Table {
     }
 
     //CREATE RECORD AN POPULATE
+
     const recordHandler = new RecordHandler(this);
     const record = new Proxy({}, recordHandler);
     record[this.id] = data[this.id];
@@ -116,9 +164,12 @@ class Table {
     //STORE RECORD
 
     this.data.set(data[this.id], record);
-
     return record;
   }
+  /**
+   * delete record
+   * @param {string || Object} obOrId
+   */
   delete(obOrId) {
     let id;
     let record;
@@ -501,6 +552,25 @@ function insertInPivotTable(id, old_id, value, table, pivotTable) {
 
 function randomHexString(size = 40) {
   return Crypto.randomBytes(size).toString("hex").slice(0, size);
+}
+
+//DUMMIE JSDOC CLASS
+/**
+ * Proxy Record class
+ */
+class Record {
+  /**
+   * Attach related object relation
+   * @param {string} field local field
+   * @param {string} fhId foreign object id
+   */
+  attach = (field, fhId) => {};
+  /**
+   * Detach related object relation
+   * @param {string} field local field
+   * @param {string} fhId foreign object id
+   */
+  detach = (field, fhId) => {};
 }
 
 module.exports = { MapDB };
