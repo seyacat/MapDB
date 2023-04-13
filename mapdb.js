@@ -282,7 +282,12 @@ class RecordHandler {
         if (prop === 'attach') {
           //MANY TO MANY ATTACH
           return function (field, fhObOrId) {
+            if (!fhObOrId) {
+              throw new error(`Null object ${fhObOrId}`);
+            }
+
             let fhId;
+            let fhRecord;
             const {
               pivotTableName,
               pivotTable,
@@ -294,11 +299,14 @@ class RecordHandler {
               fhField,
             } = getVars(this, field);
 
-            if (typeof fhObOrId === 'object') {
-              let fhRecord = fhObOrId;
-              fhId = fhRecord[fhTable.id];
-            } else {
-              fhId = fhObOrId;
+            if (fhTable) {
+              if (typeof fhObOrId === 'object') {
+                fhRecord = fhObOrId;
+                fhId = fhRecord[fhTable.id];
+              } else {
+                fhId = fhObOrId;
+                fhRecord = fhTable.get(fhId);
+              }
             }
 
             if (!pivotTableName || !fieldOptions?.hasMany) {
@@ -307,8 +315,7 @@ class RecordHandler {
 
             //UPDATE DATA TO HAS ONE
             if (fhFieldOptions.hasOne) {
-              const oldId = fhTable.data.get(fhId);
-              oldId[fhField] = target[this.id];
+              fhRecord[fhField] = target[this.id];
               return;
             }
 
@@ -471,15 +478,25 @@ class RecordHandler {
           fhTable.data.get(value)[fhField] = target[this.id];
         }
         //UPDATE ONE-MANY RELATION
+
         if (
           fhField &&
           fhPivotTable &&
           fieldOptions?.hasOne &&
           fhFieldOptions?.hasMany &&
-          fhTable?.data?.has(value)
+          value
         ) {
+          let fhRecord;
+          let fhId;
+          if (typeof value === 'object') {
+            fhRecord = value;
+            fhId = fhRecord[fhTable.id];
+          } else {
+            fhId = value;
+            fhRecord = fhTable.data.get(fhId);
+          }
           insertInPivotTable(
-            value,
+            fhId,
             old_value,
             target[this.id],
             fhTable,

@@ -78,6 +78,7 @@ const player1 = players.insert({ name: 'player1', room: room2.id });
 const pivotTable = mdb.tables.get(
   mdb.tables.get('rooms').options.fields.game.pivotTable
 );
+
 it('Test pivot sizes1', async function () {
   assert.equal(game1.rooms_data?.length, 2);
   assert.equal(game2.rooms_data?.length, 2);
