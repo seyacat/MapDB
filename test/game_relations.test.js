@@ -91,7 +91,7 @@ it('Test pivot sizes1', async function () {
   game1.attach('rooms', room3.id);
   assert.equal(game1.rooms_data.length, 4);
   assert.equal(game2.rooms_data?.length, null);
-  game2.attach('rooms', room3.id);
+  game2.attach('rooms', room3);
   assert.equal(game1.rooms_data.length, 3);
   chai
     .expect(() => {

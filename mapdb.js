@@ -1,4 +1,4 @@
-const Crypto = require("crypto");
+const Crypto = require('crypto');
 
 class MapDB {
   constructor() {
@@ -68,7 +68,7 @@ class Table {
      * @type {string}
      * @public
      */
-    this.id = "id";
+    this.id = 'id';
     //CHECK IDS
     if (options?.fields) {
       let testMultipleIds;
@@ -78,7 +78,7 @@ class Table {
         //MULTIPLE IDS
         if (properties?.id) {
           if (testMultipleIds) {
-            throw new Error("Multiple Ids configured");
+            throw new Error('Multiple Ids configured');
           }
           testMultipleIds = true;
           this.id = field;
@@ -98,7 +98,7 @@ class Table {
         if (properties?.hasOne) {
           const relatedTables = [this.name, properties.hasOne];
           relatedTables.sort();
-          properties.pivotTable = `${relatedTables.join("-")}`;
+          properties.pivotTable = `${relatedTables.join('-')}`;
           try {
             this.mdb.createTable(properties.pivotTable);
           } catch (e) {}
@@ -112,7 +112,7 @@ class Table {
           }
           const relatedTables = [this.name, properties.hasMany];
           relatedTables.sort();
-          properties.pivotTable = `${relatedTables.join("-")}`;
+          properties.pivotTable = `${relatedTables.join('-')}`;
           try {
             this.mdb.createTable(properties.pivotTable);
           } catch (e) {}
@@ -133,12 +133,12 @@ class Table {
    * @returns {Record} object
    */
   insert(data) {
-    if (typeof data != "object") {
-      throw new Error("Wrong insert data type");
+    if (typeof data != 'object') {
+      throw new Error('Wrong insert data type');
     }
 
     //CHECK ID EXIST IN OBJECTS
-    if (this.id == "id" && !data[this.id]) {
+    if (this.id == 'id' && !data[this.id]) {
       data[this.id] = randomHexString();
     }
     //POPULATED DECLARED FIELD ON NULL
@@ -149,7 +149,7 @@ class Table {
         }
       }
     }
-    if (this.id != "id" && !data[this.id]) {
+    if (this.id != 'id' && !data[this.id]) {
       throw new Error(`Missing ${this.id} field`);
     }
 
@@ -168,12 +168,12 @@ class Table {
   }
   /**
    * delete record
-   * @param {string || Object} obOrId
+   * @param {Object|string} obOrId
    */
   delete(obOrId) {
     let id;
     let record;
-    if (typeof obOrId === "object") {
+    if (typeof obOrId === 'object') {
       record = obOrId;
       id = record[this.id];
     } else {
@@ -194,23 +194,23 @@ class Table {
         if (
           record[field] &&
           properties.hasMany &&
-          Array.isArray(record[field + "_data"])
+          Array.isArray(record[field + '_data'])
         ) {
           //REMOVE DATA FROM RELATED FIELD FIRST
-          for (const relatedRecord of record[field + "_data"]) {
+          for (const relatedRecord of record[field + '_data']) {
             relatedRecord[properties.fhField] = null;
           }
-          for (const relatedRecord of record[field + "_data"]) {
+          for (const relatedRecord of record[field + '_data']) {
             record.detach(field, relatedRecord[fhTable.id]);
           }
         }
         if (
           record[field] &&
           properties.hasOne &&
-          record[field + "_data"] &&
+          record[field + '_data'] &&
           fhTable.options.fields?.[properties.fhField].hasMany
         ) {
-          const relatedRecord = record[field + "_data"];
+          const relatedRecord = record[field + '_data'];
           relatedRecord.detach(properties.fhField, id);
         }
       }
@@ -225,8 +225,8 @@ class RecordHandler {
     return {
       get: function (target, prop, receiver) {
         let field;
-        if (typeof prop === "string" && prop.includes("_data")) {
-          field = prop.replace("_data", "");
+        if (typeof prop === 'string' && prop.includes('_data')) {
+          field = prop.replace('_data', '');
         }
 
         if (this.options?.fields?.[prop]?.hasMany) {
@@ -238,7 +238,7 @@ class RecordHandler {
           }
           const childIds = pivotTable.data.get(this.name + target[this.id]);
           if (childIds?.size) {
-            return "[...]";
+            return '[...]';
           } else {
             return null;
           }
@@ -272,9 +272,10 @@ class RecordHandler {
           return parent;
         }
         //ATTACH FUNCTION
-        if (prop === "attach") {
+        if (prop === 'attach') {
           //MANY TO MANY ATTACH
-          return function (field, fhId) {
+          return function (field, fhObOrId) {
+            let fhId;
             const {
               pivotTableName,
               pivotTable,
@@ -285,6 +286,13 @@ class RecordHandler {
               fhPivotTable,
               fhField,
             } = getVars(this, field);
+
+            if (typeof fhObOrId === 'object') {
+              let fhRecord = fhObOrId;
+              fhId = fhRecord[fhTable.id];
+            } else {
+              fhId = fhObOrId;
+            }
 
             if (!pivotTableName || !fieldOptions?.hasMany) {
               throw new Error(`Not valid hasMany field (${field})`);
@@ -328,8 +336,9 @@ class RecordHandler {
 
             return;
           }.bind(this);
-        } else if (prop === "detach") {
-          return function (field, fhId) {
+        } else if (prop === 'detach') {
+          return function (field, fhObOrId) {
+            let fhId;
             const {
               pivotTableName,
               pivotTable,
@@ -342,6 +351,14 @@ class RecordHandler {
               tableName,
               fhTableName,
             } = getVars(this, field);
+
+            if (typeof fhObOrId === 'object') {
+              let fhRecord = fhObOrId;
+              fhId = fhRecord[fhTable.id];
+            } else {
+              fhId = fhObOrId;
+            }
+
             if (!pivotTableName || !fieldOptions?.hasMany) {
               throw new Error(`Not valid hasMany field (${field})`);
             }
@@ -551,7 +568,7 @@ function insertInPivotTable(id, old_id, value, table, pivotTable) {
 }
 
 function randomHexString(size = 40) {
-  return Crypto.randomBytes(size).toString("hex").slice(0, size);
+  return Crypto.randomBytes(size).toString('hex').slice(0, size);
 }
 
 //DUMMIE JSDOC CLASS
@@ -562,15 +579,15 @@ class Record {
   /**
    * Attach related object relation
    * @param {string} field local field
-   * @param {string} fhId foreign object id
+   * @param {Object|string} fhObOrId foreign object or id
    */
-  attach = (field, fhId) => {};
+  attach = (field, fhObOrId) => {};
   /**
    * Detach related object relation
    * @param {string} field local field
-   * @param {string} fhId foreign object id
+   * @param {Object|string} fhObOrId foreign object or id
    */
-  detach = (field, fhId) => {};
+  detach = (field, fhObOrId) => {};
 }
 
 module.exports = { MapDB };
