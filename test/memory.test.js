@@ -96,9 +96,9 @@ for (let j = 0; j < 1000000; j++) {
   }
 }
 
-for (const t of mdb.tables) {
+/*for (const t of mdb.tables) {
   console.log(t[0], t[1].data.size);
-}
+}*/
 
 /*console.log(
   `${Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) / 100} MB`

@@ -27,7 +27,7 @@ estudiante2.attach("cursos", curso2.id);
 estudiante2.detach("cursos", curso1.id);
 
 //SHOW RELATED DATA
-console.log(curso1.estudiantes_data);
+//console.log(curso1.estudiantes_data);
 /*[
   {
     id: '2af0fc5c3717a64cf8edf4595ba02ce548768a08',
@@ -35,7 +35,7 @@ console.log(curso1.estudiantes_data);
     cursos: null
   }
 ]*/
-console.log(estudiante1.cursos_data);
+//console.log(estudiante1.cursos_data);
 /*[
   {
     id: '2d390151184d7a49a3980ba47ebbaae32d5ca598',
