@@ -217,6 +217,13 @@ class Table {
     }
     this.data.delete(id);
   }
+  /**
+   * Same as data.get(Id);
+   * @param {*} Id
+   */
+  get(Id) {
+    return this.data.get(Id);
+  }
   //TODO HANDLE DELETES
 }
 
