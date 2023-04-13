@@ -229,7 +229,7 @@ Mail to seyacat@gmail.com
 
 ## Authors
 
-Santiago Andrade (seyacat)
+Santiago Andrade (seyacat)<br />
 You can follow the develop of this live on twitch 22:00 GMT-5 
 https://www.twitch.tv/seyacat 
 
