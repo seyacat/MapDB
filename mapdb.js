@@ -1,5 +1,3 @@
-const Crypto = require('crypto');
-
 class MapDB {
   constructor() {
     this.tables = new Map();
@@ -633,8 +631,12 @@ function insertInPivotTable(id, old_id, value, table, pivotTable) {
   pivotTable.data.get(table.name + id).add(value);
 }
 
-function randomHexString(size = 40) {
-  return Crypto.randomBytes(size).toString('hex').slice(0, size);
+function randomHexString(len = 40) {
+  let output = '';
+  for (let i = 0; i < len; ++i) {
+    output += Math.floor(Math.random() * 16).toString(16);
+  }
+  return output;
 }
 
 //DUMMIE JSDOC CLASS

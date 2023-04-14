@@ -48,8 +48,6 @@ message_status.insert({ status: 'new' });
 
 const mdbws = connections.insert({ ws: 'ok' });
 
-//console.log(connections);
-
 const msg = messages.insert({
   data: JSON.parse('{}'),
   connection: mdbws,
