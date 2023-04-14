@@ -46,6 +46,15 @@ messages.onChange(function (ob) {
 
 message_status.upsert({ status: 'new', ko: 'ko' });
 message_status.upsert({ status: 'new', ok: 'ok' });
+message_status.update({ status: 'new', okk: 'okk' });
+
+it('Update error', function () {
+  chai
+    .expect(() => {
+      message_status.update({ status: 'noexist', okk: 'okk' });
+    })
+    .to.throw('Missing record');
+});
 
 const mdbws = connections.insert({ ws: 'ok' });
 

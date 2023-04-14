@@ -170,6 +170,11 @@ class Table {
     }
     return record;
   }
+  /**
+   * Update or insert record
+   * @param {Object} data
+   * @returns
+   */
   upsert(data) {
     let record = this.get(data[this.id]);
     if (record) {
@@ -179,6 +184,21 @@ class Table {
       return record;
     }
     return this.insert(data);
+  }
+  /**
+   * Update record
+   * @param {Object} data
+   * @returns
+   */
+  update(data) {
+    let record = this.get(data[this.id]);
+    if (record) {
+      for (const [key, val] of Object.entries(data)) {
+        record[key] = val;
+      }
+      return record;
+    }
+    throw new Error('Missing record');
   }
   /**
    * delete record
