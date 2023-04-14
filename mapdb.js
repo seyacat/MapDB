@@ -170,6 +170,16 @@ class Table {
     }
     return record;
   }
+  upsert(data) {
+    let record = this.get(data[this.id]);
+    if (record) {
+      for (const [key, val] of Object.entries(data)) {
+        record[key] = val;
+      }
+      return record;
+    }
+    return this.insert(data);
+  }
   /**
    * delete record
    * @param {Object|string} obOrId

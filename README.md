@@ -31,6 +31,7 @@ Table: Contains the records and settings of a collection of objects.
 * options: contains fields configurations.
 * data: contains Map of records.
 * insert(object): Insert record function.
+* upsert(object): Update if exists or insert record function.
 * delete(object || id): delete record
 
 * onAny(function({record,event,field,prev}){}): Add callback function for any record event.

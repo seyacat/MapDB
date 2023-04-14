@@ -44,7 +44,8 @@ messages.onChange(function (ob) {
   });
 });
 
-message_status.insert({ status: 'new' });
+message_status.upsert({ status: 'new', ko: 'ko' });
+message_status.upsert({ status: 'new', ok: 'ok' });
 
 const mdbws = connections.insert({ ws: 'ok' });
 
