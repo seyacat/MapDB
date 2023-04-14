@@ -33,6 +33,10 @@ Table: Contains the records and settings of a collection of objects.
 * insert(object): Insert record function.
 * delete(object || id): delete record
 
+* onAny(function(record,event){}): Add callback function for any record event.
+* onChange(function(record){}): Add callback function for change record event.
+* onInsert(function(record){}): Add callback function for insert record event.
+
 Record: Is a proxy object created with Table.insert() method.
 * attach: reserved trapped function for attach relation on hasOne and hasMany properties.
 * detach: reserved trapped function for detach relation on hasOne and hasMany property.

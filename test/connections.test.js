@@ -1,5 +1,7 @@
 'use strict';
 const { MapDB } = require('../mapdb');
+const chai = require('chai');
+const assert = require('assert');
 
 const mdb = new MapDB();
 
@@ -21,6 +23,24 @@ const messages = mdb.createTable('messages', {
   },
 });
 
+messages.onAny(function (ob) {
+  it('Test onAny', function () {
+    assert.equal(!!ob, true);
+  });
+});
+
+messages.onInsert(function (ob) {
+  it('Test onInsert', function () {
+    assert.equal(!!ob, true);
+  });
+});
+
+messages.onChange(function (ob) {
+  it('Test onChange', function () {
+    assert.equal(!!ob, true);
+  });
+});
+
 message_status.insert({ status: 'new' });
 
 const mdbws = connections.insert({ ws: 'ok' });
@@ -33,9 +53,15 @@ const msg = messages.insert({
   status: message_status.get('new'),
 });
 
-//TODO Asserts of this logs
-/*console.log(msg);
-console.log(mdbws.messages_data);
-console.log(message_status.get('new'));
-console.log(message_status.get('new').messages_data);
-*/
+const msg2 = messages.insert({
+  data: JSON.parse('{}'),
+  connection: mdbws,
+  status: message_status.get('new'),
+});
+
+msg2.hola = 1;
+
+it('Test related exists', function () {
+  assert.equal(mdbws.messages_data.length, 2);
+  assert.equal(message_status.get('new').messages_data.length, 2);
+});

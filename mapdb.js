@@ -164,6 +164,12 @@ class Table {
     //STORE RECORD
 
     this.data.set(data[this.id], record);
+    if (this.onInsertFunction) {
+      this.onInsertFunction(record);
+    }
+    if (this.onAnyFunction) {
+      this.onAnyFunction(record, 'insert');
+    }
     return record;
   }
   /**
@@ -223,6 +229,27 @@ class Table {
    */
   get(Id) {
     return this.data.get(Id);
+  }
+  /**
+   *
+   * @param {function(Record,event){}} fn callback function for any event
+   */
+  onAny(fn) {
+    this.onAnyFunction = fn;
+  }
+  /**
+   *
+   * @param {function(Record){}} fn callback function for insert event
+   */
+  onInsert(fn) {
+    this.onInsertFunction = fn;
+  }
+  /**
+   *
+   * @param {function(Record){}} fn callback function for change event
+   */
+  onChange(fn) {
+    this.onChangeFunction = fn;
   }
   //TODO HANDLE DELETES
 }
@@ -463,7 +490,6 @@ class RecordHandler {
           (fhFieldOptions?.hasOne || fhFieldOptions?.hasMany) &&
           fhTable?.data?.has(value)
         ) {
-          //return true;
           this.data.get(target[this.id]).attach(key, value);
         }
         //UPDATE ONE-ONE RELATION
@@ -503,7 +529,13 @@ class RecordHandler {
             fhPivotTable
           );
         }
-
+        let record = this.get(target[this.id]);
+        if (this.onChangeFunction && record) {
+          this.onChangeFunction(record);
+        }
+        if (this.onAnyFunction && record) {
+          this.onAnyFunction(record, 'change');
+        }
         return true;
       }.bind(table),
     };
