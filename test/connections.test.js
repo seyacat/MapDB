@@ -24,18 +24,21 @@ const messages = mdb.createTable('messages', {
 });
 
 messages.onAny(function (ob) {
+  //console.log(ob);
   it('Test onAny', function () {
     assert.equal(!!ob, true);
   });
 });
 
 messages.onInsert(function (ob) {
+  //console.log(ob);
   it('Test onInsert', function () {
     assert.equal(!!ob, true);
   });
 });
 
 messages.onChange(function (ob) {
+  //console.log(ob);
   it('Test onChange', function () {
     assert.equal(!!ob, true);
   });

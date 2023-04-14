@@ -165,10 +165,10 @@ class Table {
 
     this.data.set(data[this.id], record);
     if (this.onInsertFunction) {
-      this.onInsertFunction(record);
+      this.onInsertFunction({ record, event: 'insert' });
     }
     if (this.onAnyFunction) {
-      this.onAnyFunction(record, 'insert');
+      this.onAnyFunction({ record, event: 'insert' });
     }
     return record;
   }
@@ -232,21 +232,21 @@ class Table {
   }
   /**
    *
-   * @param {function(Record,event){}} fn callback function for any event
+   * @param {function({record,event,field,prev}){}} fn callback function for any event
    */
   onAny(fn) {
     this.onAnyFunction = fn;
   }
   /**
    *
-   * @param {function(Record){}} fn callback function for insert event
+   * @param {function({record,event}){}} fn callback function for insert event
    */
   onInsert(fn) {
     this.onInsertFunction = fn;
   }
   /**
    *
-   * @param {function(Record){}} fn callback function for change event
+   * @param {function({record,event,field,prev}){}} fn callback function for change event
    */
   onChange(fn) {
     this.onChangeFunction = fn;
@@ -531,10 +531,20 @@ class RecordHandler {
         }
         let record = this.get(target[this.id]);
         if (this.onChangeFunction && record) {
-          this.onChangeFunction(record);
+          this.onChangeFunction({
+            record,
+            event: 'change',
+            field: key,
+            prev: old_value,
+          });
         }
         if (this.onAnyFunction && record) {
-          this.onAnyFunction(record, 'change');
+          this.onAnyFunction({
+            record,
+            event: 'change',
+            field: key,
+            prev: old_value,
+          });
         }
         return true;
       }.bind(table),
