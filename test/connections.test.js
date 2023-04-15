@@ -5,8 +5,15 @@ const assert = require('assert');
 
 const mdb = new MapDB();
 
+const users = mdb.createTable('users', {
+  fields: { connection: { hasOne: 'connections', fhField: 'user' } },
+});
+
 const connections = mdb.createTable('connections', {
-  fields: { messages: { hasMany: 'messages', fhField: 'connection' } },
+  fields: {
+    messages: { hasMany: 'messages', fhField: 'connection' },
+    user: { hasOne: 'users', fhField: 'connection' },
+  },
 });
 
 const message_status = mdb.createTable('message_status', {
@@ -23,10 +30,14 @@ const messages = mdb.createTable('messages', {
   },
 });
 
-messages.onAny(function (ob) {
-  //console.log(ob);
+messages.onAny(function (data) {
+  const { record, event } = data;
+  const newuser = users.insert({ connection: record.connection_data });
+  //console.log({ newuser });
+  //console.log({ conn: newuser.connection_data });
+
   it('Test onAny', function () {
-    assert.equal(!!ob, true);
+    assert.equal(!!data, true);
   });
 });
 

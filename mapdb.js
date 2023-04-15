@@ -498,7 +498,29 @@ class RecordHandler {
           }
         }
 
-        target[key] = value;
+        //FILL IF HAS RELATIONSHIP
+        let fhRecord;
+        let fhId;
+        if (
+          value &&
+          fhTable &&
+          (fieldOptions?.hasMany || fieldOptions?.hasOne)
+        ) {
+          if (typeof value === 'object') {
+            fhRecord = value;
+            fhId = fhRecord[fhTable.id];
+          } else {
+            fhId = value;
+            fhRecord = fhTable.data.get(fhId);
+          }
+        }
+
+        //ASSIGN TARGET VALUE
+        if (fhId) {
+          target[key] = fhId;
+        } else {
+          target[key] = value;
+        }
 
         //UPDATE KEY IN TABLE
         if (key == this.id && old_value) {
@@ -540,15 +562,6 @@ class RecordHandler {
           fhFieldOptions?.hasMany &&
           value
         ) {
-          let fhRecord;
-          let fhId;
-          if (typeof value === 'object') {
-            fhRecord = value;
-            fhId = fhRecord[fhTable.id];
-          } else {
-            fhId = value;
-            fhRecord = fhTable.data.get(fhId);
-          }
           insertInPivotTable(
             fhId,
             old_value,
