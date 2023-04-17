@@ -100,7 +100,13 @@ it('Update error', function () {
     .to.throw('Missing record');
 });
 
-const mdbws = connections.insert({ type: 'connection', ws: 'ok' });
+const mdbws = connections.insert({
+  type: 'connection',
+  ws: 'ok',
+  send: function () {
+    return 'OK';
+  },
+});
 
 const msg = messages.insert({
   type: 'message',

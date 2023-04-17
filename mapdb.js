@@ -597,7 +597,7 @@ class RecordHandler {
         }
         let record = this.get(target[this.id]);
         if (this.onChangeFunction && record && !target['update_lock']) {
-          setTimeout(this.onChangeFunction, 10, {
+          this.onChangeFunction({
             record,
             event: 'change',
             field: key,
