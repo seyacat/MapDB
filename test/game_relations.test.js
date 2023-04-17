@@ -94,6 +94,13 @@ it('Test pivot sizes1', async function () {
   assert.equal(game2.rooms_data?.length, null);
   game2.attach('rooms', room3);
   assert.equal(game1.rooms_data.length, 3);
+
+  chai
+    .expect(() => {
+      game1.attach('rooms', null);
+    })
+    .to.throw('Null object rooms');
+
   chai
     .expect(() => {
       games.delete(game2.id);

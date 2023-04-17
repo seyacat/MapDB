@@ -33,6 +33,7 @@ const messages = mdb.createTable('messages', {
 messages.onAny(function (data) {
   const { record, event } = data;
   const newuser = users.insert({ connection: record.connection_data });
+  users.update({ ...newuser, updateok: 'updateok' });
   //console.log({ newuser });
   //console.log({ conn: newuser.connection_data });
 
@@ -44,6 +45,13 @@ messages.onAny(function (data) {
 messages.onInsert(function (ob) {
   //console.log(ob);
   it('Test onInsert', function () {
+    assert.equal(!!ob, true);
+  });
+});
+
+messages.onUpdate(function (ob) {
+  //console.log(ob);
+  it('Test onUpdate', function () {
     assert.equal(!!ob, true);
   });
 });
@@ -76,6 +84,13 @@ const msg = messages.insert({
 });
 
 const msg2 = messages.insert({
+  data: JSON.parse('{}'),
+  connection: mdbws,
+  status: message_status.get('new'),
+});
+
+messages.update({
+  ...msg2,
   data: JSON.parse('{}'),
   connection: mdbws,
   status: message_status.get('new'),

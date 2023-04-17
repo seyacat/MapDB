@@ -178,10 +178,7 @@ class Table {
   upsert(data) {
     let record = this.get(data[this.id]);
     if (record) {
-      for (const [key, val] of Object.entries(data)) {
-        record[key] = val;
-      }
-      return record;
+      return this.update(data);
     }
     return this.insert(data);
   }
@@ -193,8 +190,18 @@ class Table {
   update(data) {
     let record = this.get(data[this.id]);
     if (record) {
+      let prev;
+      try {
+        prev = JSON.parse(JSON.stringify(record));
+      } catch (e) {}
       for (const [key, val] of Object.entries(data)) {
         record[key] = val;
+      }
+      if (this.onUpdateFunction) {
+        this.onUpdateFunction({ record, event: 'update', prev });
+      }
+      if (this.onAnyFunction) {
+        this.onAnyFunction({ record, event: 'update', prev });
       }
       return record;
     }
@@ -274,12 +281,18 @@ class Table {
   }
   /**
    *
-   * @param {function({record,event,field,prev}){}} fn callback function for change event
+   * @param {function({record,event}){}} fn callback function for update event
+   */
+  onUpdate(fn) {
+    this.onUpdateFunction = fn;
+  }
+  /**
+   *
+   * @param {function({record,event,field,prev}){}} fn callback function for change FIELD event
    */
   onChange(fn) {
     this.onChangeFunction = fn;
   }
-  //TODO HANDLE DELETES
 }
 
 class RecordHandler {
@@ -338,7 +351,7 @@ class RecordHandler {
           //MANY TO MANY ATTACH
           return function (field, fhObOrId) {
             if (!fhObOrId) {
-              throw new error(`Null object ${fhObOrId}`);
+              throw new Error(`Null object ${field}`);
             }
 
             let fhId;
@@ -572,7 +585,7 @@ class RecordHandler {
         }
         let record = this.get(target[this.id]);
         if (this.onChangeFunction && record) {
-          this.onChangeFunction({
+          setTimeout(this.onChangeFunction, 10, {
             record,
             event: 'change',
             field: key,

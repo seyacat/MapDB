@@ -36,8 +36,9 @@ Table: Contains the records and settings of a collection of objects.
 * delete(object || id): delete record
 
 * onAny(function({record,event,field,prev}){}): Add callback function for any record event.
-* onChange(function({record,event,field,prev}){}): Add callback function for change record event.
+* onChange(function({record,event,field,prev}){}): Add callback function for change FIELD event. Should be used only on single field change.
 * onInsert(function({record,event}){}): Add callback function for insert record event.
+* onUpdate(function({record,event,prev}){}): Add callback function for update record event.
 
 Record: Is a proxy object created with Table.insert() method.
 * attach: reserved trapped function for attach relation on hasOne and hasMany properties.
