@@ -15,6 +15,14 @@ class MapDB {
     return { tables: [...this.tables.keys()] };
   }
   /**
+   * Same as this.tables.get(name)
+   * @param {string} name
+   * @returns
+   */
+  get(name) {
+    return this.tables.get(name);
+  }
+  /**
    * Create ne table
    * @param {string} tablename
    * @param {object} options

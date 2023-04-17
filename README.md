@@ -22,7 +22,8 @@ const mdb = new MapDB();
 
 MapDB: Main class, contains all the structure and data
 * constructor(config): config can contain tables structure, look example below
-* Tables: contains Map of Tables.
+* get(name): return table by name
+* tables: contains Map of Tables.
 * createTable(name, options): create new table
 
 Table: Contains the records and settings of a collection of objects.
@@ -81,6 +82,7 @@ const config = {
 
 const mdb = new MapDB(config);
 
+const messages = mdb.get('messages');
 const messages = mdb.tables.get('messages');
 
 ```

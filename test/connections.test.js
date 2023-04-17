@@ -32,7 +32,7 @@ const config = {
 
 const mdb = new MapDB(config);
 
-const messages = mdb.tables.get('messages');
+const messages = mdb.get('messages');
 const message_status = mdb.tables.get('message_status');
 const connections = mdb.tables.get('connections');
 const users = mdb.tables.get('users');
