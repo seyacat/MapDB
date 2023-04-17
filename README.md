@@ -21,6 +21,7 @@ const mdb = new MapDB();
 ## Classes
 
 MapDB: Main class, contains all the structure and data
+* constructor(config): config can contain tables structure, look example below
 * Tables: contains Map of Tables.
 * createTable(name, options): create new table
 
@@ -62,6 +63,26 @@ Create main class
 ```
 import { MapDB } from "@seyacat/mapdb";
 const mdb = new MapDB();
+```
+
+Declare tables in a single JSON object
+```
+const config = {
+  tables: {
+    users: {
+      fields: { connection: { hasOne: 'connections', fhField: 'user' } },
+    },
+    connections: {
+      ...
+    },
+    ...
+  },
+};
+
+const mdb = new MapDB(config);
+
+const messages = mdb.tables.get('messages');
+
 ```
 
 Create Table with field properties

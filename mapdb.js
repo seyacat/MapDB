@@ -1,6 +1,11 @@
 class MapDB {
-  constructor() {
+  constructor(config) {
     this.tables = new Map();
+    if (config?.tables) {
+      for (const [t, data] of Object.entries(config.tables)) {
+        this.createTable(t, data);
+      }
+    }
   }
   /**
    * Return useful information about main class
@@ -142,6 +147,7 @@ class Table {
     //POPULATED DECLARED FIELD ON NULL
     if (this.options?.fields) {
       for (const field of Object.keys(this.options.fields)) {
+        //NOT NEED CALLBACK LOCK BECAUSE RECORD NOT EXISTS IN THIS POINT
         if (!data[field]) {
           data[field] = null;
         }

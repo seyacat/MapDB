@@ -3,33 +3,39 @@ const { MapDB } = require('../mapdb');
 const chai = require('chai');
 const assert = require('assert');
 
-const mdb = new MapDB();
-
-const users = mdb.createTable('users', {
-  fields: { connection: { hasOne: 'connections', fhField: 'user' } },
-});
-
-const connections = mdb.createTable('connections', {
-  fields: {
-    messages: { hasMany: 'messages', fhField: 'connection' },
-    user: { hasOne: 'users', fhField: 'connection' },
+const config = {
+  tables: {
+    users: {
+      fields: { connection: { hasOne: 'connections', fhField: 'user' } },
+    },
+    connections: {
+      fields: {
+        messages: { hasMany: 'messages', fhField: 'connection' },
+        user: { hasOne: 'users', fhField: 'connection' },
+      },
+    },
+    message_status: {
+      fields: {
+        status: { id: true },
+        messages: { hasMany: 'messages', fhField: 'status' },
+      },
+    },
+    messages: {
+      fields: {
+        connection: { hasOne: 'connections', fhField: 'messages' },
+        status: { hasOne: 'message_status', fhField: 'messages' },
+        user: { hasOne: 'users', fhField: 'messages' },
+      },
+    },
   },
-});
+};
 
-const message_status = mdb.createTable('message_status', {
-  fields: {
-    status: { id: true },
-    messages: { hasMany: 'messages', fhField: 'status' },
-  },
-});
+const mdb = new MapDB(config);
 
-const messages = mdb.createTable('messages', {
-  fields: {
-    connection: { hasOne: 'connections', fhField: 'messages' },
-    status: { hasOne: 'message_status', fhField: 'messages' },
-    user: { hasOne: 'users', fhField: 'messages' },
-  },
-});
+const messages = mdb.tables.get('messages');
+const message_status = mdb.tables.get('message_status');
+const connections = mdb.tables.get('connections');
+const users = mdb.tables.get('users');
 
 messages.onAny(function (data) {
   const { record, event } = data;
