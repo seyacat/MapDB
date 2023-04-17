@@ -195,8 +195,10 @@ class Table {
         prev = JSON.parse(JSON.stringify(record));
       } catch (e) {}
       for (const [key, val] of Object.entries(data)) {
+        record['update_lock'] = true;
         record[key] = val;
       }
+      record['update_lock'] = false;
       if (this.onUpdateFunction) {
         this.onUpdateFunction({ record, event: 'update', prev });
       }
@@ -299,13 +301,43 @@ class RecordHandler {
   constructor(table) {
     return {
       get: function (target, prop, receiver) {
-        let field;
+        //RELATED DATA RETURN
         if (typeof prop === 'string' && prop.includes('_data')) {
+          let field;
           field = prop.replace('_data', '');
+          const fieldOptions = this.options?.fields?.[field];
+          if (fieldOptions?.hasMany) {
+            const pivotTableName = this.options.fields[field].pivotTable;
+            const pivotTable = this.mdb.tables.get(pivotTableName);
+            if (!pivotTable.data.has(this.name + target[this.id])) {
+              return null;
+            }
+            const forheignTable = this.mdb.tables.get(fieldOptions.hasMany);
+            if (!forheignTable) {
+              return null;
+            }
+            const childIds = pivotTable.data.get(this.name + target[this.id]);
+            if (!childIds.size) return null;
+            const childs = [];
+            for (const childId of childIds) {
+              const rel = forheignTable.data.get(childId);
+              if (rel) {
+                childs.push(forheignTable.data.get(childId));
+              }
+            }
+            if (!childs.length) return null;
+            return childs;
+          }
+
+          if (fieldOptions?.hasOne) {
+            const forheignTable = this.mdb.tables.get(fieldOptions.hasOne);
+            const parent = forheignTable.data.get(target[field]);
+            return parent;
+          }
         }
 
-        if (this.options?.fields?.[prop]?.hasMany) {
-          const fieldOptions = this.options?.fields?.[prop];
+        const fieldOptions = this.options?.fields?.[prop];
+        if (fieldOptions?.hasMany) {
           const pivotTableName = this.options.fields[prop].pivotTable;
           const pivotTable = this.mdb.tables.get(pivotTableName);
           if (!pivotTable.data.has(this.name + target[this.id])) {
@@ -319,33 +351,6 @@ class RecordHandler {
           }
         }
 
-        if (field && this.options?.fields?.[field]?.hasMany) {
-          const fieldOptions = this.options?.fields?.[field];
-          const pivotTableName = this.options.fields[field].pivotTable;
-          const pivotTable = this.mdb.tables.get(pivotTableName);
-          const forheignTable = this.mdb.tables.get(fieldOptions.hasMany);
-          if (!pivotTable.data.has(this.name + target[this.id])) {
-            return null;
-          }
-          const childIds = pivotTable.data.get(this.name + target[this.id]);
-          if (!childIds.size) return null;
-          const childs = [];
-          for (const childId of childIds) {
-            const rel = forheignTable.data.get(childId);
-            if (rel) {
-              childs.push(forheignTable.data.get(childId));
-            }
-          }
-          if (!childs.length) return null;
-          return childs;
-        }
-
-        if (field && this.options?.fields?.[field]?.hasOne) {
-          const fieldOptions = this.options?.fields?.[field];
-          const forheignTable = this.mdb.tables.get(fieldOptions.hasOne);
-          const parent = forheignTable.data.get(target[field]);
-          return parent;
-        }
         //ATTACH FUNCTION
         if (prop === 'attach') {
           //MANY TO MANY ATTACH
@@ -457,6 +462,15 @@ class RecordHandler {
         }
       }.bind(table),
       set: function (target, key, value, proxy) {
+        //UPDATE LOCK TO BLOCK CALLBACKS
+        if (key === 'update_lock') {
+          if (value) {
+            target[key] = value;
+          } else {
+            delete target[key];
+          }
+          return true;
+        }
         const old_value = target[key];
         const {
           fieldOptions,
@@ -467,6 +481,23 @@ class RecordHandler {
           fhPivotTable,
           fhField,
         } = getVars(this, key);
+
+        //FILL IF HAS RELATIONSHIP
+        let fhRecord;
+        let fhId;
+        if (
+          value &&
+          fhTable &&
+          (fieldOptions?.hasMany || fieldOptions?.hasOne)
+        ) {
+          if (typeof value === 'object') {
+            fhRecord = value;
+            fhId = fhRecord[fhTable.id];
+          } else {
+            fhId = value;
+            fhRecord = fhTable.data.get(fhId);
+          }
+        }
 
         //CHECK REQUIRED
         if (fieldOptions?.required && !value) {
@@ -485,15 +516,13 @@ class RecordHandler {
           );
         }
         if (
-          fieldOptions?.required &&
+          fhId &&
           fieldOptions?.hasOne &&
           fieldOptions?.fhField &&
           fhTable?.options?.fields?.[fhField] &&
-          !fhTable?.data.get(value)
+          !fhTable?.data.get(fhId)
         ) {
-          throw new Error(
-            `Not valid parent for field ${key}:${value} required`
-          );
+          throw new Error(`Not valid parent for field ${key}:${fhId} required`);
         }
 
         //IGNORE ON SAME
@@ -508,23 +537,6 @@ class RecordHandler {
         if (this.uniques.has(key)) {
           if (this.uniques.get(key).has(value)) {
             throw new Error(`Record duplicated. ${key}:${value}`);
-          }
-        }
-
-        //FILL IF HAS RELATIONSHIP
-        let fhRecord;
-        let fhId;
-        if (
-          value &&
-          fhTable &&
-          (fieldOptions?.hasMany || fieldOptions?.hasOne)
-        ) {
-          if (typeof value === 'object') {
-            fhRecord = value;
-            fhId = fhRecord[fhTable.id];
-          } else {
-            fhId = value;
-            fhRecord = fhTable.data.get(fhId);
           }
         }
 
@@ -584,7 +596,7 @@ class RecordHandler {
           );
         }
         let record = this.get(target[this.id]);
-        if (this.onChangeFunction && record) {
+        if (this.onChangeFunction && record && !target['update_lock']) {
           setTimeout(this.onChangeFunction, 10, {
             record,
             event: 'change',
@@ -592,7 +604,7 @@ class RecordHandler {
             prev: old_value,
           });
         }
-        if (this.onAnyFunction && record) {
+        if (this.onAnyFunction && record && !target['update_lock']) {
           this.onAnyFunction({
             record,
             event: 'change',
