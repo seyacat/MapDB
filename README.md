@@ -45,8 +45,9 @@ Table: Contains the records and settings of a collection of objects.
 Record: Is a proxy object created with Table.insert() method.
 * attach: reserved trapped function for attach relation on hasOne and hasMany properties.
 * detach: reserved trapped function for detach relation on hasOne and hasMany property.
-* ${fieldname}_data: A related field with hasMany or hasOne shows the id, [...] when you have many or null.
-To retrieve the data of a related field it is necessary to prepend "_data", this to avoid infinite loops.
+* ${fieldname}_data: A related field with hasMany or hasOne shows the id, [...] when you have many or null. To retrieve the data of a related field it is necessary to prepend "_data", this to avoid infinite loops.
+* [???] hasMany field with unknow content, seen on console.log()
+* [...] hasMany field with childs
 
 ## Field Properties
 

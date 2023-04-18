@@ -6,7 +6,11 @@ const assert = require('assert');
 const config = {
   tables: {
     users: {
-      fields: { connection: { hasOne: 'connections', fhField: 'user' } },
+      fields: {
+        connection: { hasOne: 'connections', fhField: 'user' },
+        room: { hasOne: 'rooms', fhField: 'users' },
+        myrooms: { hasMany: 'rooms', fhField: 'owner' },
+      },
     },
     connections: {
       fields: {
@@ -27,6 +31,12 @@ const config = {
         user: { hasOne: 'users', fhField: 'messages' },
       },
     },
+    rooms: {
+      fields: {
+        users: { hasMany: 'users', fhField: 'room' },
+        owner: { hasOne: 'users', fhField: 'myrooms' },
+      },
+    },
   },
 };
 
@@ -36,6 +46,7 @@ const messages = mdb.get('messages');
 const message_status = mdb.tables.get('message_status');
 const connections = mdb.tables.get('connections');
 const users = mdb.tables.get('users');
+const rooms = mdb.get('rooms');
 
 messages.onAny(function (data) {
   const { record, event } = data;
@@ -56,6 +67,8 @@ messages.onAny(function (data) {
       status: 'reply',
       data: { success: true },
     });
+
+    const room = rooms.insert({ users: user, owner: user });
   }
 
   it('Test onAny', function () {

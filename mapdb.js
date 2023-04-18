@@ -318,6 +318,10 @@ class RecordHandler {
     return {
       get: function (target, prop, receiver) {
         //RELATED DATA RETURN
+        if (typeof prop != 'string') {
+          console.log(prop);
+          return 'false';
+        }
         if (typeof prop === 'string' && prop.includes('_data')) {
           let field;
           field = prop.replace('_data', '');
@@ -557,7 +561,9 @@ class RecordHandler {
         }
 
         //ASSIGN TARGET VALUE
-        if (fhId) {
+        if (fieldOptions?.hasMany) {
+          target[key] = '[???]';
+        } else if (fhId) {
           target[key] = fhId;
         } else {
           target[key] = value;
@@ -612,6 +618,8 @@ class RecordHandler {
             fhPivotTable
           );
         }
+
+        //CALLBACKS
         let record = this.get(target[this.id]);
         if (this.onChangeFunction && record && !target['update_lock']) {
           this.onChangeFunction({
