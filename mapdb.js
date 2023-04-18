@@ -155,7 +155,6 @@ class Table {
     //POPULATED DECLARED FIELD ON NULL
     if (this.options?.fields) {
       for (const field of Object.keys(this.options.fields)) {
-        //NOT NEED CALLBACK LOCK BECAUSE RECORD NOT EXISTS IN THIS POINT
         if (!data[field]) {
           data[field] = null;
         }
@@ -170,12 +169,15 @@ class Table {
     const recordHandler = new RecordHandler(this);
     const record = new Proxy({}, recordHandler);
     record[this.id] = data[this.id];
+    //STORE RECORD
+    this.data.set(data[this.id], record);
+    //PUPOLATE RECORD
     for (const [key, val] of Object.entries(data)) {
+      record['update_lock'] = true;
       record[key] = val;
     }
-    //STORE RECORD
+    record['update_lock'] = false;
 
-    this.data.set(data[this.id], record);
     if (this.onInsertFunction) {
       this.onInsertFunction({ record, event: 'insert' });
     }
@@ -577,20 +579,21 @@ class RecordHandler {
           fhPivotTable &&
           fieldOptions?.hasMany &&
           (fhFieldOptions?.hasOne || fhFieldOptions?.hasMany) &&
-          fhTable?.data?.has(value)
+          fhTable?.data?.has(fhId)
         ) {
-          this.data.get(target[this.id]).attach(key, value);
+          this.data.get(target[this.id]).attach(key, fhId);
         }
+
         //UPDATE ONE-ONE RELATION
         if (
           fhField &&
           fhPivotTable &&
           fieldOptions?.hasOne &&
           fhFieldOptions?.hasOne &&
-          fhTable?.data?.has(value) &&
-          fhTable.data.get(value)[fhField] !== target[this.id]
+          fhTable?.data?.has(fhId) &&
+          fhTable.data.get(fhId)[fhField] != target[this.id]
         ) {
-          fhTable.data.get(value)[fhField] = target[this.id];
+          fhTable.data.get(fhId)[fhField] = target[this.id];
         }
         //UPDATE ONE-MANY RELATION
 
