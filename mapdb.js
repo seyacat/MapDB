@@ -173,10 +173,10 @@ class Table {
     this.data.set(data[this.id], record);
     //PUPOLATE RECORD
     for (const [key, val] of Object.entries(data)) {
-      record['update_lock'] = true;
+      record['muted'] = true;
       record[key] = val;
     }
-    record['update_lock'] = false;
+    record['muted'] = false;
 
     if (this.onInsertFunction) {
       this.onInsertFunction({ record, event: 'insert' });
@@ -211,10 +211,10 @@ class Table {
         prev = JSON.parse(JSON.stringify(record));
       } catch (e) {}
       for (const [key, val] of Object.entries(data)) {
-        record['update_lock'] = true;
+        record['muted'] = true;
         record[key] = val;
       }
-      record['update_lock'] = false;
+      record['muted'] = false;
       if (this.onUpdateFunction) {
         this.onUpdateFunction({ record, event: 'update', prev });
       }
@@ -483,7 +483,7 @@ class RecordHandler {
       }.bind(table),
       set: function (target, key, value, proxy) {
         //UPDATE LOCK TO BLOCK CALLBACKS
-        if (key === 'update_lock') {
+        if (key === 'muted') {
           if (value) {
             target[key] = value;
           } else {
@@ -621,7 +621,7 @@ class RecordHandler {
 
         //CALLBACKS
         let record = this.get(target[this.id]);
-        if (this.onChangeFunction && record && !target['update_lock']) {
+        if (this.onChangeFunction && record && !target['muted']) {
           this.onChangeFunction({
             record,
             event: 'change',
@@ -629,7 +629,7 @@ class RecordHandler {
             prev: old_value,
           });
         }
-        if (this.onAnyFunction && record && !target['update_lock']) {
+        if (this.onAnyFunction && record && !target['muted']) {
           this.onAnyFunction({
             record,
             event: 'change',
