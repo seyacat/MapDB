@@ -371,6 +371,9 @@ class RecordHandler {
         if (prop === 'attach') {
           //MANY TO MANY ATTACH
           return function (field, fhObOrId) {
+            if (typeof field !== 'string') {
+              throw new Error(`Field should be a string. ${field}`);
+            }
             if (!fhObOrId) {
               throw new Error(`Null object ${field}`);
             }
@@ -441,6 +444,9 @@ class RecordHandler {
           }.bind(this);
         } else if (prop === 'detach') {
           return function (field, fhObOrId) {
+            if (typeof field !== 'string') {
+              throw new Error(`Field should be a string. ${field}`);
+            }
             let fhId;
             const {
               pivotTableName,
