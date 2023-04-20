@@ -6,6 +6,46 @@ class MapDB {
         this.createTable(t, data);
       }
     }
+    console.log(config);
+    if (config?.relationships) {
+      try {
+        for (const [
+          type1,
+          table1,
+          field1,
+          type2,
+          table2,
+          field2,
+        ] of config.relationships) {
+          if (type1 == 'one')
+            this.get(table2).options.fields[field1] = {
+              hasOne: table1,
+              fhField: field2,
+            };
+          if (type1 == 'many')
+            this.get(table2).options.fields[field1] = {
+              hasMany: table1,
+              fhField: field2,
+            };
+          if (type2 == 'one')
+            this.get(table1).options.fields[field2] = {
+              hasOne: table2,
+              fhField: field1,
+            };
+          if (type2 == 'many')
+            this.get(table1).options.fields[field2] = {
+              hasMany: table2,
+              fhField: field1,
+            };
+          console.log(this.get(table1).options);
+          console.log(this.get(table2).options);
+        }
+      } catch (e) {
+        throw new Error(
+          "Relation format is ['one'|'many',table1 name,fhField1 name,'one'|'many',table2 name,fhField2 name]"
+        );
+      }
+    }
   }
   /**
    * Return useful information about main class

@@ -38,6 +38,7 @@ const config = {
       },
     },
   },
+  relationships: [['one', 'users', 'users', 'many', 'rooms', 'room']],
 };
 
 const mdb = new MapDB(config);
