@@ -318,10 +318,6 @@ class RecordHandler {
     return {
       get: function (target, prop, receiver) {
         //RELATED DATA RETURN
-        if (typeof prop != 'string') {
-          console.log(prop);
-          return 'false';
-        }
         if (typeof prop === 'string' && prop.includes('_data')) {
           let field;
           field = prop.replace('_data', '');
