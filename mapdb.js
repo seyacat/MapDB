@@ -172,11 +172,10 @@ class Table {
     //STORE RECORD
     this.data.set(data[this.id], record);
     //PUPOLATE RECORD
+    record['muted'] = true;
     for (const [key, val] of Object.entries(data)) {
-      record['muted'] = true;
       record[key] = val;
     }
-    record['muted'] = false;
 
     if (this.onInsertFunction) {
       this.onInsertFunction({ record, event: 'insert' });
@@ -184,6 +183,7 @@ class Table {
     if (this.onAnyFunction) {
       this.onAnyFunction({ record, event: 'insert' });
     }
+    record['muted'] = false;
     return record;
   }
   /**
@@ -210,17 +210,17 @@ class Table {
       try {
         prev = JSON.parse(JSON.stringify(record));
       } catch (e) {}
+      record['muted'] = true;
       for (const [key, val] of Object.entries(data)) {
-        record['muted'] = true;
         record[key] = val;
       }
-      record['muted'] = false;
       if (this.onUpdateFunction) {
         this.onUpdateFunction({ record, event: 'update', prev });
       }
       if (this.onAnyFunction) {
         this.onAnyFunction({ record, event: 'update', prev });
       }
+      record['muted'] = false;
       return record;
     }
     throw new Error('Missing record');
@@ -621,21 +621,25 @@ class RecordHandler {
 
         //CALLBACKS
         let record = this.get(target[this.id]);
-        if (this.onChangeFunction && record && !target['muted']) {
+        if (this.onChangeFunction && record && !record['muted']) {
+          record.muted = true;
           this.onChangeFunction({
             record,
             event: 'change',
             field: key,
             prev: old_value,
           });
+          record.muted = false;
         }
-        if (this.onAnyFunction && record && !target['muted']) {
+        if (this.onAnyFunction && record && !record['muted']) {
+          record.muted = true;
           this.onAnyFunction({
             record,
             event: 'change',
             field: key,
             prev: old_value,
           });
+          record.muted = false;
         }
         return true;
       }.bind(table),
