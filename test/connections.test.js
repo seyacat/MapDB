@@ -8,37 +8,51 @@ const config = {
     users: {
       fields: {
         connection: { hasOne: 'connections', fhField: 'user' },
-        room: { hasOne: 'rooms', fhField: 'users' },
-        myrooms: { hasMany: 'rooms', fhField: 'owner' },
+        //room: { hasOne: 'rooms', fhField: 'users' },
+        //myrooms: { hasMany: 'rooms', fhField: 'owner' },
       },
     },
     connections: {
       fields: {
-        messages: { hasMany: 'messages', fhField: 'connection' },
-        user: { hasOne: 'users', fhField: 'connection' },
+        //messages: { hasMany: 'messages', fhField: 'connection' },
+        //user: { hasOne: 'users', fhField: 'connection' },
       },
     },
     message_status: {
       fields: {
         status: { id: true },
-        messages: { hasMany: 'messages', fhField: 'status' },
+        //messages: { hasMany: 'messages', fhField: 'status' },
       },
     },
     messages: {
       fields: {
-        connection: { hasOne: 'connections', fhField: 'messages' },
-        status: { hasOne: 'message_status', fhField: 'messages' },
-        user: { hasOne: 'users', fhField: 'messages' },
+        //connection: { hasOne: 'connections', fhField: 'messages' },
+        //status: { hasOne: 'message_status', fhField: 'messages' },
+        //user: { hasOne: 'users', fhField: 'messages' },
       },
     },
     rooms: {
       fields: {
-        users: { hasMany: 'users', fhField: 'room' },
-        owner: { hasOne: 'users', fhField: 'myrooms' },
+        //users: { hasMany: 'users', fhField: 'room' },
+        //owner: { hasOne: 'users', fhField: 'myrooms' },
       },
     },
   },
-  relationships: [['one', 'users', 'users', 'many', 'rooms', 'room']],
+
+  relationships: [
+    //One room in table rooms has many users in table users
+    ['one', 'room', 'rooms', 'many', 'users', 'users'],
+    //One owner (users) has many rooms(rooms)
+    ['one', 'owner', 'users', 'many', 'myrooms', 'rooms'],
+    //One owner (users) has many messages(messages)
+    ['one', 'user', 'users', 'many', 'messages', 'messages'],
+    //One connection (connections) has one user (users)
+    ['one', 'connection', 'connections', 'one', 'user', 'users'],
+    //One connection (connections) has many messages (messages)
+    ['one', 'connection', 'connections', 'many', 'messages', 'messages'],
+    //One status (message_status) has many messages (messages)
+    ['one', 'status', 'message_status', 'many', 'messages', 'messages'],
+  ],
 };
 
 const mdb = new MapDB(config);

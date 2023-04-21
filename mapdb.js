@@ -2,48 +2,47 @@ class MapDB {
   constructor(config) {
     this.tables = new Map();
     if (config?.tables) {
+      console.log(config.tables);
+      if (config?.relationships) {
+        try {
+          for (const [
+            type1,
+            field1,
+            table1,
+            type2,
+            field2,
+            table2,
+          ] of config.relationships) {
+            if (!config.tables[table1].fields[field2]) {
+              config.tables[table1].fields[field2] = {};
+            }
+            if (!config.tables[table2].fields[field1]) {
+              config.tables[table2].fields[field1] = {};
+            }
+            type1 == 'one'
+              ? (config.tables[table2].fields[field1].hasOne = table1)
+              : (config.tables[table2].fields[field1].hasMany = table1);
+            config.tables[table2].fields[field1].fhField = field2;
+            type2 == 'one'
+              ? (config.tables[table1].fields[field2].hasOne = table2)
+              : (config.tables[table1].fields[field2].hasMany = table2);
+            config.tables[table1].fields[field2].fhField = field1;
+          }
+        } catch (e) {
+          console.log(e);
+          throw new Error(
+            `Relation format is 
+            ['one'|'many',fhField1 name, table1 name ,'one'|'many',fhField2 name, table2 name]
+            read as 
+            " one|many user in table users has one|many objects in table objects "
+            `
+          );
+        }
+      }
+      console.log(require('util').inspect(config, false, null, true));
+
       for (const [t, data] of Object.entries(config.tables)) {
         this.createTable(t, data);
-      }
-    }
-    console.log(config);
-    if (config?.relationships) {
-      try {
-        for (const [
-          type1,
-          table1,
-          field1,
-          type2,
-          table2,
-          field2,
-        ] of config.relationships) {
-          if (type1 == 'one')
-            this.get(table2).options.fields[field1] = {
-              hasOne: table1,
-              fhField: field2,
-            };
-          if (type1 == 'many')
-            this.get(table2).options.fields[field1] = {
-              hasMany: table1,
-              fhField: field2,
-            };
-          if (type2 == 'one')
-            this.get(table1).options.fields[field2] = {
-              hasOne: table2,
-              fhField: field1,
-            };
-          if (type2 == 'many')
-            this.get(table1).options.fields[field2] = {
-              hasMany: table2,
-              fhField: field1,
-            };
-          console.log(this.get(table1).options);
-          console.log(this.get(table2).options);
-        }
-      } catch (e) {
-        throw new Error(
-          "Relation format is ['one'|'many',table1 name,fhField1 name,'one'|'many',table2 name,fhField2 name]"
-        );
       }
     }
   }

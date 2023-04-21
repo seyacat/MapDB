@@ -21,7 +21,7 @@ const mdb = new MapDB();
 ## Classes
 
 MapDB: Main class, contains all the structure and data
-* constructor(config): config can contain tables structure, look example below
+* constructor(config): config can contain tables structure and relationships, look examples below
 * get(name): return table by name
 * tables: contains Map of Tables.
 * createTable(name, options): create new table
@@ -80,6 +80,7 @@ const config = {
     },
     ...
   },
+  relationships: [...]
 };
 
 const mdb = new MapDB(config);
@@ -94,6 +95,27 @@ Create Table with field properties
 const emails = mdb.createTable("emails", {
   fields: { email: { unique: true } },
 });
+```
+
+Simplified relationships
+```
+const config = {
+  tables: {...},
+  relationships: [
+      //One room in table rooms has many users in table users
+      ['one', 'room', 'rooms', 'many', 'users', 'users'],
+      //One owner (users) has many rooms(rooms)
+      ['one', 'owner', 'users', 'many', 'myrooms', 'rooms'],
+      //One owner (users) has many messages(messages)
+      ['one', 'user', 'users', 'many', 'messages', 'messages'],
+      //One connection (connections) has one user (users)
+      ['one', 'connection', 'connections', 'one', 'user', 'users'],
+      //One connection (connections) has many messages (messages)
+      ['one', 'connection', 'connections', 'many', 'messages', 'messages'],
+      //One status (message_status) has many messages (messages)
+      ['one', 'status', 'message_status', 'many', 'messages', 'messages'],
+    ],
+}
 ```
 
 Create records
@@ -249,7 +271,7 @@ npm run test
 Write without problem to seyacat@gmail.com or create an issue.
 
 ## Roadmap
-
+* [ ] Better docs.
 * [ ] Typescript types.
 * [X] Delete records.
 * [ ] Validate fields.
