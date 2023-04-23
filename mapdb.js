@@ -2,44 +2,48 @@ class MapDB {
   constructor(config) {
     this.tables = new Map();
     if (config?.tables) {
-      console.log(config.tables);
       if (config?.relationships) {
-        try {
-          for (const [
-            type1,
-            field1,
-            table1,
-            type2,
-            field2,
-            table2,
-          ] of config.relationships) {
-            if (!config.tables[table1].fields[field2]) {
-              config.tables[table1].fields[field2] = {};
-            }
-            if (!config.tables[table2].fields[field1]) {
-              config.tables[table2].fields[field1] = {};
-            }
-            type1 == 'one'
-              ? (config.tables[table2].fields[field1].hasOne = table1)
-              : (config.tables[table2].fields[field1].hasMany = table1);
-            config.tables[table2].fields[field1].fhField = field2;
-            type2 == 'one'
-              ? (config.tables[table1].fields[field2].hasOne = table2)
-              : (config.tables[table1].fields[field2].hasMany = table2);
-            config.tables[table1].fields[field2].fhField = field1;
+        for (const [
+          type1,
+          field1,
+          table1,
+          type2,
+          field2,
+          table2,
+        ] of config.relationships) {
+          if (!type1 || !field1 || !table1 || !type2 || !field2 || !table2) {
+            throw new Error(
+              `Relation format is ['one'|'many',fhField1 name, table1 name ,'one'|'many',fhField2 name, table2 name] read as " one|many user in table users has one|many objects in table objects "`
+            );
           }
-        } catch (e) {
-          console.log(e);
-          throw new Error(
-            `Relation format is 
-            ['one'|'many',fhField1 name, table1 name ,'one'|'many',fhField2 name, table2 name]
-            read as 
-            " one|many user in table users has one|many objects in table objects "
-            `
-          );
+          if (!config.tables[table1]) {
+            throw new Error(`Table ${table1} not declared`);
+          }
+          if (!config.tables[table2]) {
+            throw new Error(`Table ${table2} not declared`);
+          }
+          if (!config.tables[table1].fields) {
+            config.tables[table1].fields = {};
+          }
+          if (!config.tables[table2].fields) {
+            config.tables[table2].fields = {};
+          }
+          if (!config.tables[table1].fields[field2]) {
+            config.tables[table1].fields[field2] = {};
+          }
+          if (!config.tables[table2].fields[field1]) {
+            config.tables[table2].fields[field1] = {};
+          }
+          type1 == 'one'
+            ? (config.tables[table2].fields[field1].hasOne = table1)
+            : (config.tables[table2].fields[field1].hasMany = table1);
+          config.tables[table2].fields[field1].fhField = field2;
+          type2 == 'one'
+            ? (config.tables[table1].fields[field2].hasOne = table2)
+            : (config.tables[table1].fields[field2].hasMany = table2);
+          config.tables[table1].fields[field2].fhField = field1;
         }
       }
-      console.log(require('util').inspect(config, false, null, true));
 
       for (const [t, data] of Object.entries(config.tables)) {
         this.createTable(t, data);
