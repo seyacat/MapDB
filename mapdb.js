@@ -77,6 +77,21 @@ class MapDB {
       throw new Error(`Table ${tablename} already exists`);
     }
 
+    for (const [field, data] of Object.entries(options?.fields ?? {})) {
+      if (data.index) {
+        const indexTablename = `${tablename}_${field}`;
+        options.fields[field].hasOne = indexTablename;
+        options.fields[field].fhField = tablename;
+        const indexOptions = {
+          fields: {
+            [field]: { id: true },
+            [tablename]: { hasMany: tablename, fhField: field },
+          },
+        };
+        this.createTable(indexTablename, indexOptions);
+      }
+    }
+
     const newtable = new Table(this, tablename, options);
     this.tables.set(tablename, newtable);
     return newtable;
@@ -217,7 +232,9 @@ class Table {
     //PUPOLATE RECORD
     record['muted'] = true;
     for (const [key, val] of Object.entries(data)) {
-      record[key] = val;
+      if (key != this.id) {
+        record[key] = val;
+      }
     }
 
     if (this.onInsertFunction) {
@@ -338,6 +355,26 @@ class Table {
     return Array.from(this.data).map((row) => row[1]);
   }
   /**
+   * Get all by indexed field;
+   * @param {*} Id
+   */
+  getAllByField(field, value) {
+    if (this.options?.fields?.[field]?.index) {
+      return this.mdb.get(this.options?.fields?.[field].hasOne).get(value)[
+        `${this.name}_data`
+      ];
+    } else {
+      //Non optimized
+      return Array.from(this.data)
+        .filter((row) => {
+          return row[1][field] === value;
+        })
+        .map((row) => {
+          return row[1];
+        });
+    }
+  }
+  /**
    *
    * @param {function({record,event,field,prev}){}} fn callback function for any event
    */
@@ -410,7 +447,7 @@ class RecordHandler {
         if (fieldOptions?.hasMany) {
           const pivotTableName = this.options.fields[prop].pivotTable;
           const pivotTable = this.mdb.tables.get(pivotTableName);
-          if (!pivotTable.data.has(this.name + target[this.id])) {
+          if (!pivotTable?.data.has(this.name + target[this.id])) {
             return null;
           }
           const childIds = pivotTable.data.get(this.name + target[this.id]);
@@ -471,7 +508,10 @@ class RecordHandler {
             }
 
             //CREATE SET IF NOT EXISTS
-            if (!pivotTable.data.has(this.name + target[this.id])) {
+            if (
+              pivotTable &&
+              !pivotTable.data.has(this.name + target[this.id])
+            ) {
               pivotTable.data.set(this.name + target[this.id], new Set());
             }
             //POLULATE PIVOTABLE
@@ -606,6 +646,7 @@ class RecordHandler {
           return true;
         }
         //CHECK IF RECORD ID ALREADY EXISTS
+
         if (key == this.id && this.data.has(value)) {
           throw new Error(`Id record ${key}:${value} already exists`);
         }
@@ -750,6 +791,7 @@ function getVars(table, key) {
 
 function deleteInPivotTable(id, fhid, tableName, fhTableName, pivotTable) {
   if (
+    pivotTable &&
     pivotTable.data.has(tableName + id) &&
     pivotTable.data.get(tableName + id).has(fhid)
   ) {
@@ -759,6 +801,7 @@ function deleteInPivotTable(id, fhid, tableName, fhTableName, pivotTable) {
     }
   }
   if (
+    pivotTable &&
     pivotTable.data.has(fhTableName + fhid) &&
     pivotTable.data.get(fhTableName + fhid).has(id)
   ) {
@@ -771,17 +814,17 @@ function deleteInPivotTable(id, fhid, tableName, fhTableName, pivotTable) {
 
 function insertInPivotTable(id, old_id, value, table, pivotTable) {
   //CREATE SET IF NOT EXISTS ON PIVOT
-  if (!pivotTable.data.has(table.name + id)) {
+  if (pivotTable && !pivotTable.data.has(table.name + id)) {
     pivotTable.data.set(table.name + id, new Set());
   }
-  if (pivotTable.data.has(table.name + old_id)) {
+  if (pivotTable && pivotTable.data.has(table.name + old_id)) {
     pivotTable.data.get(table.name + old_id).delete(value);
     //DELETE SET IF ITS NULL
     if (pivotTable.data.get(table.name + old_id).size <= 0) {
       pivotTable.data.delete(table.name + old_id);
     }
   }
-  pivotTable.data.get(table.name + id).add(value);
+  pivotTable?.data.get(table.name + id).add(value);
 }
 
 function randomHexString(len = 40) {

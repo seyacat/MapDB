@@ -33,6 +33,7 @@ Table: Contains the records and settings of a collection of objects.
 * options: contains fields configurations.
 * data: contains Map of records.
 * get() || getAll(): Without parameters returns array of all data
+* getAllByField(field, value): Get all data with field value;
 * get(Id): Return record with with Id
 * insert(object): Insert record function.
 * upsert(object): Update if exists or insert record function.
@@ -58,6 +59,7 @@ Record: Is a proxy object created with Table.insert() method.
 * [x] unique.
 * [x] required: non null.
 * [x] match: validation regexp.
+* [x] index: create an relation table for this field `${table}_${field}`.
 * [x] hasOne: property than contains table name for the record that has related a single parent. 
 * [x] hasMany: property than contains table name for the record that has related many children.
 * [x] fhField: property than contains field name of related table, required on fields with hasMany and hasOne property.

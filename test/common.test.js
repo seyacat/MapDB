@@ -41,10 +41,31 @@ it('Error relationships', function () {
 });
 
 let config = {
-  tables: { table1: {}, table2: {} },
+  tables: { table1: { fields: { status: { index: true } } }, table2: {} },
   relationships: [['one', 'table1', 'table1', 'many', 'table2', 'table2']],
 };
 const mdb = new MapDB(config);
+
+it('Wrong index insert', function () {
+  const table1 = mdb.get('table1');
+  const table1Status = mdb.get('table1_status');
+  table1Status.insert({ type: 'table1Status', status: 'new' });
+  table1Status.insert({ type: 'table1Status', status: 'old' });
+
+  table1.insert({ type: 'table1', status: 'new', status2: 'old' });
+  table1.insert({ type: 'table1', status: 'new' });
+
+  assert.equal(table1Status.get('new').table1_data.length, 2);
+
+  console.log(table1.getAllByField('status2', 'old'));
+  console.log(table1.getAllByField('status', 'new'));
+
+  chai
+    .expect(() => {
+      table1.insert({ status: 'wrong' });
+    })
+    .to.throw('Not valid parent for field status:wrong required');
+});
 
 const usuarios = mdb.createTable('usuarios', {
   fields: {
@@ -76,7 +97,7 @@ it('Create relation without fhField', function () {
 });
 
 it('Common commands', function () {
-  assert.equal(mdb.describe().tables.length, 6);
+  assert.equal(mdb.describe().tables.length, 8);
   assert.equal(!!usuarios.describe().id, true);
   assert.equal(!!usuarios.describe().name, true);
   assert.equal(!!usuarios.describe().options, true);
