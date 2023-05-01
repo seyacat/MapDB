@@ -32,6 +32,8 @@ Table: Contains the records and settings of a collection of objects.
 * name: unique table name.
 * options: contains fields configurations.
 * data: contains Map of records.
+* get() || getAll(): Without parameters returns array of all data
+* get(Id): Return record with with Id
 * insert(object): Insert record function.
 * upsert(object): Update if exists or insert record function.
 * update(object): Update record function.

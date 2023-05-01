@@ -324,7 +324,18 @@ class Table {
    * @param {*} Id
    */
   get(Id) {
-    return this.data.get(Id);
+    if (Id) {
+      return this.data.get(Id);
+    } else {
+      return this.getAll();
+    }
+  }
+  /**
+   * Get array of all records;
+   * @param {*} Id
+   */
+  getAll() {
+    return Array.from(this.data).map((row) => row[1]);
   }
   /**
    *
