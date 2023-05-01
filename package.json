@@ -1,6 +1,6 @@
 {
   "name": "@seyacat/mapdb",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "description": "Tool for managing relationships between objects like a database does.",
   "main": "mapdb.js",
   "scripts": {
